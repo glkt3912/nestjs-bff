@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DefaultApiProvider } from './config/axios-client.provider';
 import { AuthHeaderInterceptor } from './interceptors/auth-header.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import { MockInterceptor } from './interceptors/mock.interceptor';
 
 @Global()
 @Module({
@@ -18,7 +19,7 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
       }),
     }),
   ],
-  providers: [DefaultApiProvider, LoggingInterceptor, AuthHeaderInterceptor],
+  providers: [DefaultApiProvider, LoggingInterceptor, AuthHeaderInterceptor, MockInterceptor],
   exports: [HttpModule, DefaultApiProvider],
 })
 export class SharedModule {}
