@@ -17,8 +17,8 @@ import { UsersModule } from './users/users.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => [
         {
-          ttl: configService.get<number>('THROTTLE_TTL', 60000),
-          limit: configService.get<number>('THROTTLE_LIMIT', 100),
+          ttl: Number(configService.get('THROTTLE_TTL', 60000)),
+          limit: Number(configService.get('THROTTLE_LIMIT', 100)),
         },
       ],
     }),
