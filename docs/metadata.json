@@ -53,6 +53,16 @@
       "updatedAt": "2026-02-23"
     }
     ,{
+      "id": "rate-limiting",
+      "path": "docs/rate-limiting.md",
+      "title": "レート制限",
+      "description": "@nestjs/throttler による IP ベースのレート制限の仕組み・設定方法・エンドポイント単位でのオーバーライド方法",
+      "tags": ["セキュリティ", "レート制限", "throttler"],
+      "industry": ["IT"],
+      "topics": ["ThrottlerGuard", "APP_GUARD", "THROTTLE_TTL", "THROTTLE_LIMIT", "429"],
+      "updatedAt": "2026-02-23"
+    }
+    ,{
       "id": "why-bff",
       "path": "docs/why-bff.md",
       "title": "BFF を使う理由：BFFなし vs BFFあり",
