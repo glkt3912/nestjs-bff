@@ -1,0 +1,10 @@
+inputSpec: ./swagger.json
+generatorName: typescript-axios
+outputDir: ./src/generated
+additionalProperties:
+  modelNameSuffix: Dto        # 生成型を UserDto など Dto suffix で統一（手書きと衝突しない）
+  apiPackage: api
+  modelPackage: models
+  withSeparateModelsAndApi: true
+  supportsES6: true
+  enumPropertyNaming: UPPERCASE
