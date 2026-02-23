@@ -1,8 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-
-jest.mock('fs');
 import * as fs from 'fs';
 
 import { MockInterceptor } from './mock.interceptor';
@@ -63,6 +61,7 @@ describe('MockInterceptor', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('MOCK_MODE が無効の場合', () => {
@@ -94,10 +93,9 @@ describe('MockInterceptor', () => {
     });
 
     it('フィクスチャが存在する場合は isMock エラーを reject する', async () => {
-      jest.mocked(fs.existsSync).mockReturnValue(true);
-      jest
-        .mocked(fs.readFileSync)
-        .mockReturnValue(JSON.stringify([{ id: 1, name: 'Alice' }]) as never);
+      jest.spyOn(fs.promises, 'readFile').mockResolvedValue(
+        JSON.stringify([{ id: 1, name: 'Alice' }]) as unknown as string & Buffer,
+      );
 
       const requestFn = requestInterceptors[0];
       await expect(
@@ -110,7 +108,9 @@ describe('MockInterceptor', () => {
     });
 
     it('フィクスチャが存在しない場合はリクエスト config をそのまま返す', async () => {
-      jest.mocked(fs.existsSync).mockReturnValue(false);
+      jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
+        Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+      );
       const config = { method: 'get', url: '/unknown' };
 
       const requestFn = requestInterceptors[0];
@@ -143,39 +143,59 @@ describe('MockInterceptor', () => {
 
     describe('URL 正規化', () => {
       beforeEach(() => {
-        jest.mocked(fs.existsSync).mockReturnValue(false);
+        jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
+          Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+        );
       });
 
       it('GET /users → GET_users.json として解決する', async () => {
         await requestInterceptors[0]({ method: 'get', url: '/users' });
 
-        expect(fs.existsSync).toHaveBeenCalledWith(
+        expect(fs.promises.readFile).toHaveBeenCalledWith(
           expect.stringContaining('GET_users.json'),
+          'utf-8',
         );
       });
 
       it('GET /users/1 → GET_users_1.json として解決する', async () => {
         await requestInterceptors[0]({ method: 'get', url: '/users/1' });
 
-        expect(fs.existsSync).toHaveBeenCalledWith(
+        expect(fs.promises.readFile).toHaveBeenCalledWith(
           expect.stringContaining('GET_users_1.json'),
+          'utf-8',
         );
       });
 
       it('POST /users → POST_users.json として解決する', async () => {
         await requestInterceptors[0]({ method: 'post', url: '/users' });
 
-        expect(fs.existsSync).toHaveBeenCalledWith(
+        expect(fs.promises.readFile).toHaveBeenCalledWith(
           expect.stringContaining('POST_users.json'),
+          'utf-8',
         );
       });
 
       it('method が未設定の場合は GET として扱う', async () => {
         await requestInterceptors[0]({ url: '/users' });
 
-        expect(fs.existsSync).toHaveBeenCalledWith(
+        expect(fs.promises.readFile).toHaveBeenCalledWith(
           expect.stringContaining('GET_users.json'),
+          'utf-8',
         );
+      });
+    });
+
+    describe('パストラバーサル防止', () => {
+      it('../ を含む URL は config をそのまま返す', async () => {
+        jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
+          Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+        );
+        const config = { method: 'get', url: '../etc/passwd' };
+
+        const requestFn = requestInterceptors[0];
+        const result = await requestFn(config);
+
+        expect(result).toBe(config);
       });
     });
   });
