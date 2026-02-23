@@ -52,5 +52,15 @@
       "topics": ["ThinBFF", "ThickBFF", "Adapterパターン", "型安全性", "意味的不整合", "設計判断"],
       "updatedAt": "2026-02-23"
     }
+    ,{
+      "id": "why-bff",
+      "path": "docs/why-bff.md",
+      "title": "BFF を使う理由：BFFなし vs BFFあり",
+      "description": "BFF（Backend for Frontend）を導入する利点と注意点を比較表で整理。通信回数・セキュリティ・型安全性・チーム分業・デプロイ独立性の観点から解説",
+      "tags": ["BFF", "設計", "アーキテクチャ", "比較"],
+      "industry": ["IT"],
+      "topics": ["BFF", "APIキー", "型安全性", "セキュリティ", "チーム分業", "デプロイ"],
+      "updatedAt": "2026-02-23"
+    }
   ]
 }
