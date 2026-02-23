@@ -13,10 +13,7 @@ export class HealthController {
   @Get()
   @HealthCheck()
   check() {
-    const backendUrl = this.configService.get<string>(
-      'BACKEND_API_BASE_URL',
-      'http://localhost:8080',
-    );
+    const backendUrl = this.configService.getOrThrow<string>('BACKEND_API_BASE_URL');
     return this.health.check([
       () => this.http.pingCheck('backend', backendUrl),
     ]);

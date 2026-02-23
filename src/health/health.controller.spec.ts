@@ -24,7 +24,7 @@ describe('HealthController', () => {
     } as unknown as jest.Mocked<HttpHealthIndicator>;
 
     configService = {
-      get: jest.fn().mockReturnValue('http://localhost:8080'),
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:8080'),
     } as unknown as jest.Mocked<ConfigService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -64,19 +64,12 @@ describe('HealthController', () => {
     );
   });
 
-  it('BACKEND_API_BASE_URL 未設定時はデフォルト URL を使用する', async () => {
-    configService.get.mockImplementation(
-      (_key: string, defaultVal?: string) => defaultVal,
-    );
+  it('BACKEND_API_BASE_URL 未設定時はエラーをスローする', () => {
+    configService.getOrThrow.mockImplementation(() => {
+      throw new Error('Config key "BACKEND_API_BASE_URL" is not defined');
+    });
 
-    await controller.check();
-    const [indicators] = healthCheckService.check.mock.calls[0];
-    await indicators[0]();
-
-    expect(httpHealthIndicator.pingCheck).toHaveBeenCalledWith(
-      'backend',
-      'http://localhost:8080',
-    );
+    expect(() => controller.check()).toThrow();
   });
 
   it('バックエンド障害時は HealthCheckService がエラーレスポンスを返す', async () => {
