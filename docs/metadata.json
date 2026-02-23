@@ -42,5 +42,15 @@
       "topics": ["plainToInstance", "Expose", "excludeExtraneousValues", "ClassSerializerInterceptor", "Over-fetching"],
       "updatedAt": "2026-02-23"
     }
+    ,{
+      "id": "bff-design-philosophy",
+      "path": "docs/bff-design-philosophy.md",
+      "title": "BFF 設計の2つの流儀",
+      "description": "Thin BFF と Thick BFF（Repositoryパターン）の構造・メリット・デメリット、型エラー伝播の違い、スクリプトで検出できない意味的不整合、採用判断の基準",
+      "tags": ["設計", "BFF", "アーキテクチャ", "Repositoryパターン"],
+      "industry": ["IT"],
+      "topics": ["ThinBFF", "ThickBFF", "Adapterパターン", "型安全性", "意味的不整合", "設計判断"],
+      "updatedAt": "2026-02-23"
+    }
   ]
 }
