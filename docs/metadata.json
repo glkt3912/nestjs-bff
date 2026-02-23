@@ -73,6 +73,16 @@
       "updatedAt": "2026-02-23"
     }
     ,{
+      "id": "mock-mode",
+      "path": "docs/mock-mode.md",
+      "title": "開発用モック・スタブモード",
+      "description": "MOCK_MODE=true で fixtures/ の JSON ファイルをレスポンスとして返す仕組み・フィクスチャ命名規則・MockInterceptor の実装詳細",
+      "tags": ["開発", "テスト", "モック"],
+      "industry": ["IT"],
+      "topics": ["MockInterceptor", "MOCK_MODE", "fixtures", "スタブ", "開発効率"],
+      "updatedAt": "2026-02-23"
+    }
+    ,{
       "id": "why-bff",
       "path": "docs/why-bff.md",
       "title": "BFF を使う理由：BFFなし vs BFFあり",
