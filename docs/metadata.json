@@ -63,6 +63,16 @@
       "updatedAt": "2026-02-23"
     }
     ,{
+      "id": "health-check",
+      "path": "docs/health-check.md",
+      "title": "ヘルスチェック",
+      "description": "@nestjs/terminus による HTTP pingCheck の仕組み・レスポンス形式・インジケーター追加方法",
+      "tags": ["監視", "ヘルスチェック", "terminus"],
+      "industry": ["IT"],
+      "topics": ["HealthCheckService", "HttpHealthIndicator", "pingCheck", "503", "監視"],
+      "updatedAt": "2026-02-23"
+    }
+    ,{
       "id": "why-bff",
       "path": "docs/why-bff.md",
       "title": "BFF を使う理由：BFFなし vs BFFあり",

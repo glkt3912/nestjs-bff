@@ -130,9 +130,16 @@ curl http://localhost:3000/api/users/99999
 ### ヘルスチェック
 
 ```bash
-curl http://localhost:3000/api/health
-# → {"status": "ok", "timestamp": "..."}
+# バックエンド起動中
+curl http://localhost:3000/health
+# → {"status": "ok", "info": {"backend": {"status": "up"}}, ...}
+
+# バックエンド停止中
+curl http://localhost:3000/health
+# → 503 + {"status": "error", "error": {"backend": {"status": "down", ...}}}
 ```
+
+詳細は [docs/health-check.md](./health-check.md) を参照してください。
 
 ## ファイル構造の規約
 
