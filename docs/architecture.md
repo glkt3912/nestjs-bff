@@ -17,6 +17,7 @@ NestJS BFF (port 3000)
     │  ・AxiosExceptionFilter  — バックエンドエラーの透過マッピング
     │  ・LoggingInterceptor    — リクエスト/レスポンスログ
     │  ・AuthHeaderInterceptor — 認証ヘッダー一元付与
+    │  ・MockInterceptor       — 開発時フィクスチャ応答（MOCK_MODE=true のみ有効）
     │
     ▼
 バックエンド API（外部サービス）
@@ -30,7 +31,7 @@ NestJS BFF (port 3000)
 ```text
 HttpModule.registerAsync()
     └─ HttpService.axiosRef (単一 AxiosInstance)
-            ├─ interceptors.request  : LoggingInterceptor, AuthHeaderInterceptor
+            ├─ interceptors.request  : LoggingInterceptor, AuthHeaderInterceptor, MockInterceptor
             └─ DefaultApiProvider (useFactory)
                     └─ new DefaultApi(config, basePath, axiosRef)
                             └─ getUsers(), createUser() … すべて axiosRef を使用
@@ -87,7 +88,7 @@ UsersController → フロントエンド
 @Global()
 @Module({
   imports: [HttpModule.registerAsync(...)],
-  providers: [DefaultApiProvider, LoggingInterceptor, AuthHeaderInterceptor],
+  providers: [DefaultApiProvider, LoggingInterceptor, AuthHeaderInterceptor, MockInterceptor],
   exports: [HttpModule, DefaultApiProvider],
 })
 export class SharedModule {}
