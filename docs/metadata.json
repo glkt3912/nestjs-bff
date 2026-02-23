@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-23",
+  "documents": [
+    {
+      "id": "architecture",
+      "path": "docs/architecture.md",
+      "title": "アーキテクチャ設計",
+      "description": "NestJS BFF の全体構成、Axiosインスタンス統合、例外処理設計、DTOの使い分け方針",
+      "tags": ["アーキテクチャ", "設計", "BFF", "NestJS"],
+      "industry": ["IT"],
+      "topics": ["Axios統合", "ExceptionFilter", "SharedModule", "DTO", "インターセプター"],
+      "updatedAt": "2026-02-23"
+    },
+    {
+      "id": "setup",
+      "path": "docs/setup.md",
+      "title": "セットアップ",
+      "description": "依存パッケージインストール、環境変数設定、クライアントコード生成、開発サーバー起動手順",
+      "tags": ["セットアップ", "環境構築", "インストール"],
+      "industry": ["IT"],
+      "topics": ["npm install", "env", "gen:all", "openapi-generator", "トラブルシューティング"],
+      "updatedAt": "2026-02-23"
+    },
+    {
+      "id": "development",
+      "path": "docs/development.md",
+      "title": "開発ガイド",
+      "description": "新しいエンドポイントの追加手順、手書きDTOの実装方法、検証手順、ファイル構造の規約",
+      "tags": ["開発", "実装", "ガイド"],
+      "industry": ["IT"],
+      "topics": ["エンドポイント追加", "DTO", "class-validator", "コード生成", "テスト"],
+      "updatedAt": "2026-02-23"
+    },
+    {
+      "id": "response-filtering",
+      "path": "docs/response-filtering.md",
+      "title": "レスポンス DTO フィルタリング",
+      "description": "Over-fetchingを防ぐための手書きレスポンスDTO実装パターン。@Expose() + plainToInstance + excludeExtraneousValues: true による公開フィールド制御",
+      "tags": ["セキュリティ", "DTO", "class-transformer", "レスポンス"],
+      "industry": ["IT"],
+      "topics": ["plainToInstance", "Expose", "excludeExtraneousValues", "ClassSerializerInterceptor", "Over-fetching"],
+      "updatedAt": "2026-02-23"
+    }
+  ]
+}
