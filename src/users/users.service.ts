@@ -1,3 +1,5 @@
+// NOTE: このモジュールは BFF 実装パターンのリファレンス実装です。
+// 実際の機能追加時はこのパターンを参考に新モジュールを作成してください。
 import { Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DEFAULT_API } from '../shared/config/axios-client.provider';
@@ -13,16 +15,24 @@ export class UsersService {
   // try-catch 不要。AxiosError は Global ExceptionFilter が処理する
   async findAll(): Promise<UserResponse[]> {
     const { data } = await this.api.getUsers();
-    return plainToInstance(UserResponse, data, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponse, data, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findOne(id: number): Promise<UserResponse> {
     const { data } = await this.api.getUserById({ id });
-    return plainToInstance(UserResponse, data, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponse, data, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async create(dto: CreateUserRequest): Promise<UserResponse> {
-    const { data } = await this.api.createUser({ createUserDto: dto as UserDto });
-    return plainToInstance(UserResponse, data, { excludeExtraneousValues: true });
+    const { data } = await this.api.createUser({
+      createUserDto: dto as UserDto,
+    });
+    return plainToInstance(UserResponse, data, {
+      excludeExtraneousValues: true,
+    });
   }
 }
