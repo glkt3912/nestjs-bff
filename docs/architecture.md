@@ -12,6 +12,7 @@ NestJS BFF は外部バックエンド API の swagger.json からクライア�
     │
     ▼
 NestJS BFF (port 3000)
+    │  ・ThrottlerGuard        — レート制限（IP ごとのリクエスト数制御）
     │  ・ValidationPipe        — 入力バリデーション
     │  ・AxiosExceptionFilter  — バックエンドエラーの透過マッピング
     │  ・LoggingInterceptor    — リクエスト/レスポンスログ
