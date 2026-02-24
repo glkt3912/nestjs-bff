@@ -35,6 +35,56 @@ nestjs-pino
 
 ---
 
+## AsyncLocalStorage とは
+
+Node.js 標準モジュール (`async_hooks`) が提供する、**非同期処理をまたいでデータを共有する仕組み**です。
+
+### 問題背景：非同期処理でコンテキストが消える
+
+Node.js は1プロセスで複数リクエストを並行処理します。
+グローバル変数に `correlationId` を書くと、リクエスト A の値がリクエスト B に上書きされます。
+
+```
+リクエスト A ──┐
+               ├─ await DB処理 ──→ correlationId = "aaa"
+リクエスト B ──┤
+               ├─ await DB処理 ──→ correlationId = "bbb" ← A が使うつもりだった値が消える
+```
+
+### AsyncLocalStorage の解決策
+
+`run()` で囲まれたコールバックと、その中で発生するすべての非同期処理に**専用のストアが自動で紐づく**。
+
+```typescript
+const storage = new AsyncLocalStorage<{ correlationId: string }>();
+
+// リクエスト A の処理開始
+storage.run({ correlationId: 'aaa' }, async () => {
+  await someAsyncOperation();
+  storage.getStore(); // → { correlationId: 'aaa' } ← B に上書きされない
+});
+
+// リクエスト B の処理開始（同時並行）
+storage.run({ correlationId: 'bbb' }, async () => {
+  await someAsyncOperation();
+  storage.getStore(); // → { correlationId: 'bbb' }
+});
+```
+
+### NestJS の REQUEST スコープとの違い
+
+| | `AsyncLocalStorage` | NestJS REQUEST スコープ |
+|---|---|---|
+| 仕組み | Node.js ネイティブ | DI コンテナがリクエストごとにインスタンス生成 |
+| パフォーマンス | 高速（オーバーヘッドほぼなし） | リクエストごとに DI ツリーを再構築するコストあり |
+| 使い方 | 関数呼び出しだけで取得可能 | コンストラクタ注入が必要 |
+| 適用範囲 | Axios interceptor 等 DI 外でも使える | NestJS DI 管理クラス内のみ |
+
+本プロジェクトでは `correlationIdMiddleware` が `asyncLocalStorage.run()` でコンテキストを確立し、
+`LoggingInterceptor` や `AxiosExceptionFilter` から `getCorrelationId()` で取得しています。
+
+---
+
 ## パッケージ構成
 
 ```bash
@@ -118,7 +168,9 @@ const CORRELATION_HEADER = 'x-request-id';
 
 export function correlationIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   const raw = req.headers[CORRELATION_HEADER];
-  const correlationId = (Array.isArray(raw) ? raw[0] : raw) ?? randomUUID();
+  const candidate = Array.isArray(raw) ? raw[0] : raw;
+  // 128文字超の入力は破棄してUUID生成（ログ肥大化防止）
+  const correlationId = candidate && candidate.length <= 128 ? candidate : randomUUID();
 
   req.headers[CORRELATION_HEADER] = correlationId;  // pino-http の genReqId が読む
   res.setHeader(CORRELATION_HEADER, correlationId); // クライアントへ折り返す
@@ -136,8 +188,8 @@ LoggerModule.forRootAsync({
   useFactory: (configService: ConfigService) => ({
     pinoHttp: {
       level: configService.get<string>('LOG_LEVEL', 'info'),
-      genReqId: (req) => req.headers['x-request-id'] as string, // correlationId と一致させる
-      transport: process.env.NODE_ENV !== 'production'
+      genReqId: (req) => (req.headers['x-request-id'] as string) ?? randomUUID(),
+      transport: configService.get('NODE_ENV') !== 'production'
         ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
         : undefined,
       serializers: {
@@ -145,7 +197,7 @@ LoggerModule.forRootAsync({
         res: (res) => ({ statusCode: res.statusCode }),
       },
       autoLogging: {
-        ignore: (req) => req.url === '/health', // ヘルスチェックのノイズを抑制
+        ignore: (req) => req.url === '/api/health', // ヘルスチェックのノイズを抑制
       },
     },
   }),
