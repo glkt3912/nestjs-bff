@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { randomUUID } from 'crypto';
 import { LoggerModule } from 'nestjs-pino';
 import { HealthModule } from './health/health.module';
 import { AxiosExceptionFilter } from './shared/filters/axios-exception.filter';
@@ -20,9 +21,9 @@ import { UsersModule } from './users/users.module';
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
           level: configService.get<string>('LOG_LEVEL', 'info'),
-          genReqId: (req) => req.headers['x-request-id'] as string,
+          genReqId: (req) => (req.headers['x-request-id'] as string) ?? randomUUID(),
           transport:
-            process.env.NODE_ENV !== 'production'
+            configService.get('NODE_ENV') !== 'production'
               ? {
                   target: 'pino-pretty',
                   options: { colorize: true, singleLine: true },
@@ -32,7 +33,7 @@ import { UsersModule } from './users/users.module';
             req: (req) => ({ method: req.method, url: req.url }),
             res: (res) => ({ statusCode: res.statusCode }),
           },
-          autoLogging: { ignore: (req) => req.url === '/health' },
+          autoLogging: { ignore: (req) => req.url === '/api/health' },
         },
       }),
     }),
