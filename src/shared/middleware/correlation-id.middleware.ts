@@ -10,7 +10,8 @@ export function correlationIdMiddleware(
   next: NextFunction,
 ): void {
   const raw = req.headers[CORRELATION_HEADER];
-  const correlationId = (Array.isArray(raw) ? raw[0] : raw) ?? randomUUID();
+  const candidate = Array.isArray(raw) ? raw[0] : raw;
+  const correlationId = candidate && candidate.length <= 128 ? candidate : randomUUID();
 
   req.headers[CORRELATION_HEADER] = correlationId;
   res.setHeader(CORRELATION_HEADER, correlationId);
