@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PinoLogger } from 'nestjs-pino';
+import { getLoggerToken, PinoLogger } from 'nestjs-pino';
 import * as requestContext from '../context/request-context';
 import { LoggingInterceptor } from './logging.interceptor';
 
@@ -55,7 +55,7 @@ describe('LoggingInterceptor', () => {
         LoggingInterceptor,
         { provide: HttpService, useValue: mockHttpService },
         {
-          provide: `PinoLogger:${LoggingInterceptor.name}`,
+          provide: getLoggerToken(LoggingInterceptor.name),
           useValue: mockLogger,
         },
       ],
