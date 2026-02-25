@@ -12,12 +12,24 @@ NestJS BFF は外部バックエンド API の swagger.json からクライア�
     │
     ▼
 NestJS BFF (port 3000)
+    │
+    │  [Express ミドルウェア層]
+    │  ・correlationIdMiddleware — Correlation ID 生成・AsyncLocalStorage へ格納
+    │  ・pino-http (LoggerModule) — HTTP リクエスト/レスポンスの構造化ログ
+    │
+    │  [NestJS グローバル層]
     │  ・ThrottlerGuard        — レート制限（IP ごとのリクエスト数制御）
     │  ・ValidationPipe        — 入力バリデーション
     │  ・AxiosExceptionFilter  — バックエンドエラーの透過マッピング
-    │  ・LoggingInterceptor    — リクエスト/レスポンスログ
-    │  ・AuthHeaderInterceptor — 認証ヘッダー一元付与
+    │
+    │  [Axios インターセプター層]
+    │  ・LoggingInterceptor    — アウトバウンドリクエスト/レスポンスログ・x-request-id 伝播
+    │  ・AuthHeaderInterceptor — バックエンド向け API キー一元付与
     │  ・MockInterceptor       — 開発時フィクスチャ応答（MOCK_MODE=true のみ有効）
+    │
+    │  [ルート]
+    │  ・/api/health           — ヘルスチェック（HealthModule）
+    │  ・/api/*                — 各 API モジュール（UsersModule 等）
     │
     ▼
 バックエンド API（外部サービス）

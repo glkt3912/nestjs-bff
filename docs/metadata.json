@@ -102,5 +102,45 @@
       "topics": ["nestjs-pino", "pino-http", "pino-pretty", "AsyncLocalStorage", "CorrelationID", "x-request-id", "LoggerModule", "InjectPinoLogger", "LOG_LEVEL"],
       "updatedAt": "2026-02-25"
     }
+    ,{
+      "id": "express-middleware",
+      "path": "docs/express-middleware.md",
+      "title": "Express ミドルウェアと req / res / next",
+      "description": "Express ミドルウェアの req・res・next 3 引数の役割、ミドルウェアチェーンの仕組み、next() を呼ばない場合の挙動、関数型とクラス型の違い、このプロジェクトの correlationIdMiddleware での活用、テスト方法",
+      "tags": ["Express", "ミドルウェア", "NestJS", "テスト"],
+      "industry": ["IT"],
+      "topics": ["req", "res", "next", "NextFunction", "NestMiddleware", "correlationIdMiddleware", "app.use", "関数型ミドルウェア"],
+      "updatedAt": "2026-02-25"
+    }
+    ,{
+      "id": "arguments-host",
+      "path": "docs/arguments-host.md",
+      "title": "ArgumentsHost",
+      "description": "NestJS の ExceptionFilter に渡される ArgumentsHost の役割・switchToHttp() による req/res 取得・このプロジェクトでの使用箇所（AxiosExceptionFilter）・テストでのモック方法",
+      "tags": ["NestJS", "ExceptionFilter", "テスト", "アーキテクチャ"],
+      "industry": ["IT"],
+      "topics": ["ArgumentsHost", "ExceptionFilter", "switchToHttp", "HttpArgumentsHost", "AxiosExceptionFilter", "モック"],
+      "updatedAt": "2026-02-25"
+    }
+    ,{
+      "id": "axios-interceptors",
+      "path": "docs/axios-interceptors.md",
+      "title": "Axios インターセプター",
+      "description": "Axios インターセプターの仕組み・動作フロー、AuthHeaderInterceptor/LoggingInterceptor/MockInterceptor の役割と実装詳細、NestJS NestInterceptor との使い分け、テスト方法",
+      "tags": ["Axios", "インターセプター", "アーキテクチャ", "BFF"],
+      "industry": ["IT"],
+      "topics": ["AxiosInterceptor", "OnModuleInit", "HttpService", "AuthHeader", "Logging", "MockMode", "横断的関心事"],
+      "updatedAt": "2026-02-25"
+    }
+    ,{
+      "id": "testing-strategy",
+      "path": "docs/testing-strategy.md",
+      "title": "テスト戦略",
+      "description": "Thin BFF においてなぜ Controller/Service テストを省略するか、テストする価値があるインフラ層の責務、Axiosキャプチャ・PinoLogger・ArgumentsHost・Plain関数のモックパターン集、カバレッジ設定の根拠と将来の API 追加時のガイドライン",
+      "tags": ["テスト", "品質", "テスト戦略", "Jest"],
+      "industry": ["IT"],
+      "topics": ["ユニットテスト", "カバレッジ", "ExceptionFilter", "Interceptor", "Middleware", "Jest", "モック", "AsyncLocalStorage"],
+      "updatedAt": "2026-02-25"
+    }
   ]
 }
