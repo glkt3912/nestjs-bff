@@ -142,6 +142,58 @@ jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('test-id-123');
 
 ---
 
+## Jest を選定している理由
+
+NestJS CLI がデフォルトで Jest を採用しており、このプロジェクトもそれを踏襲しています。
+ただし、単なるデフォルト踏襲ではなく、以下の理由から積極的に採用しています。
+
+### 他のテストフレームワークとの比較
+
+| | Jest | Vitest | Mocha + Chai |
+| --- | --- | --- | --- |
+| **セットアップ** | ゼロコンフィグ（NestJS 統合済み） | Vite 環境向け | 別途 assertion / spy ライブラリが必要 |
+| **モック** | `jest.fn()` / `jest.spyOn()` が組み込み | Jest 互換 API | `sinon` 等が必要 |
+| **型サポート** | `@types/jest` で完結 | 同等 | 複数パッケージが必要 |
+| **ts-jest** | NestJS 公式サポート | `vitest` に標準統合 | `ts-mocha` 等が必要 |
+| **実行速度** | 並列実行（Worker ベース） | Vitest より遅い | 設定次第 |
+
+### Jest を選ぶ理由
+
+#### 1. NestJS との統合が最も成熟している
+
+`@nestjs/testing` の `Test.createTestingModule()` は Jest を前提に設計されています。
+DI コンテナをテスト用に構築し、`module.get<T>()` でインスタンスを取得するパターンは Jest と相性が良いです。
+
+```typescript
+const module = await Test.createTestingModule({
+  providers: [AxiosExceptionFilter, { provide: getLoggerToken(...), useValue: mockLogger }],
+}).compile();
+
+filter = module.get<AxiosExceptionFilter>(AxiosExceptionFilter);
+```
+
+#### 2. モック機能がオールインワン
+
+別ライブラリなしで spy・mock・stub・assertion が揃っています。
+
+```typescript
+jest.fn()                        // モック関数
+jest.spyOn(obj, 'method')        // スパイ
+jest.mock('./module')            // モジュール全体のモック
+expect(fn).toHaveBeenCalledWith  // アサーション
+```
+
+#### 3. `ts-jest` による TypeScript サポート
+
+コンパイルなしに `.spec.ts` を直接実行できます。
+`tsconfig.json` の型チェックをそのままテストに活用できます。
+
+#### 4. スナップショットテスト・カバレッジが組み込み
+
+`jest --coverage` 一発でカバレッジレポートが生成され、CI との統合も容易です。
+
+---
+
 ## カバレッジ設定
 
 ### 閾値
@@ -169,7 +221,7 @@ jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('test-id-123');
 ```
 
 | 除外パターン | 理由 |
-|------------|------|
+| ---------- | ---- |
 | `src/generated/` | `openapi-generator` で自動生成。生成のたびに上書きされるためテスト不可 |
 | `src/main.ts` | NestJS ブートストラップのみ。ユニットテスト不可（E2E 対象） |
 | `*.module.ts` | NestJS の DI 宣言メタデータのみ。ロジックなし |
