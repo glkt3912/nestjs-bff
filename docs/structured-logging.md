@@ -24,7 +24,7 @@
 
 ### pino-http との関係
 
-```
+```text
 nestjs-pino
   └── pino-http   ← Express/Fastify の HTTP リクエスト/レスポンスを自動ログ
         └── pino  ← JSON シリアライザ本体
@@ -32,6 +32,55 @@ nestjs-pino
 
 `nestjs-pino` は `pino-http` を NestJS Module として包んだものです。
 `pino-http` が HTTP ミドルウェアとして request / response を自動的にロギングします。
+
+---
+
+## Winston との差異
+
+### 比較表
+
+| | Pino | Winston |
+|---|------|---------|
+| **出力形式** | JSON のみ（構造化ログが前提） | JSON・テキスト・カスタム形式 |
+| **パフォーマンス** | 非常に高速（非同期書き込み） | Pino より 5〜10 倍遅い |
+| **設計思想** | ログ処理を別プロセス（transport）に委譲 | プロセス内で全処理 |
+| **NestJS 統合** | `nestjs-pino`（公式推奨） | `nest-winston` |
+| **非同期コンテキスト** | `pino-http` が `AsyncLocalStorage` と統合済み | 自前実装が必要 |
+| **開発時の可読性** | `pino-pretty` で変換 | デフォルトでカラー出力 |
+
+### パフォーマンスが高い理由
+
+Winston はログを**プロセス内で同期的に処理**します。
+Pino は**最小限の JSON 文字列を生成して stdout に流す**だけにとどめ、フォーマットや色付けは別プロセスに委譲します。
+
+```text
+【Winston】
+  ログ呼び出し → フォーマット → トランスポート処理 → 出力
+                （すべてメインプロセス内）
+
+【Pino】
+  ログ呼び出し → JSON を stdout に書き込む（最小処理）
+                     ↓ パイプ
+               pino-pretty（別プロセス）→ 人間が読める形式
+```
+
+### 構造化ログの書き方の違い
+
+```typescript
+// Winston
+logger.info('user fetched', { userId: 42 });
+// → message が文字列、metadata は別フィールド（実装依存）
+
+// Pino（nestjs-pino）
+this.logger.info({ userId: 42 }, 'user fetched');
+// → 第1引数がオブジェクト、第2引数がメッセージ（JSON に自然にマージされる）
+```
+
+### このプロジェクトで Pino を選んだ理由
+
+- BFF はリクエストを中継するだけなので**ログ出力が多い** → パフォーマンスが重要
+- `pino-http` が `AsyncLocalStorage` と統合済みで **Correlation ID 伝播が簡単**
+- JSON 構造化ログが標準なので **Datadog / CloudWatch などのログ基盤と親和性が高い**
 
 ---
 
@@ -44,7 +93,7 @@ Node.js 標準モジュール (`async_hooks`) が提供する、**非同期処�
 Node.js は1プロセスで複数リクエストを並行処理します。
 グローバル変数に `correlationId` を書くと、リクエスト A の値がリクエスト B に上書きされます。
 
-```
+```text
 リクエスト A ──┐
                ├─ await DB処理 ──→ correlationId = "aaa"
 リクエスト B ──┤
@@ -74,7 +123,7 @@ storage.run({ correlationId: 'bbb' }, async () => {
 ### NestJS の REQUEST スコープとの違い
 
 | | `AsyncLocalStorage` | NestJS REQUEST スコープ |
-|---|---|---|
+|---|---------------------|------------------------|
 | 仕組み | Node.js ネイティブ | DI コンテナがリクエストごとにインスタンス生成 |
 | パフォーマンス | 高速（オーバーヘッドほぼなし） | リクエストごとに DI ツリーを再構築するコストあり |
 | 使い方 | 関数呼び出しだけで取得可能 | コンストラクタ注入が必要 |
@@ -98,7 +147,7 @@ npm install -D pino-pretty               # 開発時の可読フォーマッタ
 
 ### リクエスト処理フロー
 
-```
+```text
 Client (with optional x-request-id)
   │
   ▼ app.use()  ← main.ts (Express に直接登録: Phase 1)
@@ -210,7 +259,7 @@ LoggerModule.forRootAsync({
 
 ### 開発環境 (pino-pretty)
 
-```
+```text
 [12:34:56.789] INFO (req.id=my-trace-123): request completed
   req: { "method": "GET", "url": "/api/users" }
   res: { "statusCode": 200 }
@@ -252,7 +301,7 @@ LoggerModule.forRootAsync({
 環境変数 `LOG_LEVEL` でレベルを変更できます。
 
 | レベル | 用途 |
-|--------|------|
+| ------ | ---- |
 | `trace` | 非常に詳細なデバッグ情報 |
 | `debug` | 開発時のデバッグ情報 |
 | `info` | 通常の運用ログ (デフォルト) |
@@ -300,7 +349,7 @@ export class MyService {
 `new Logger(MyService.name)` との違い:
 
 | | `new Logger()` (NestJS) | `@InjectPinoLogger()` |
-|---|---|---|
+| --- | --- | --- |
 | 構造化オブジェクト | 第2引数以降が文字列変換される | 第1引数にオブジェクトを渡せる |
 | DI | 不要 | コンストラクタ注入が必要 |
 | テスト | `jest.spyOn(logger, 'log')` | `jest.fn()` でモック |
