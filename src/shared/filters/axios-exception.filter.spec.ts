@@ -115,6 +115,17 @@ describe('AxiosExceptionFilter', () => {
     );
   });
 
+  it('backendData が null の場合 exception.message が使われる', () => {
+    jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('test-id');
+    const exception = makeAxiosError(502, null, 'Bad Gateway');
+
+    filter.catch(exception, mockHost);
+
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Bad Gateway' }),
+    );
+  });
+
   it('logger.error が { url, status, correlationId } を含むオブジェクト付きで呼ばれる', () => {
     const correlationId = 'corr-123';
     jest

@@ -62,6 +62,27 @@ describe('correlationIdMiddleware', () => {
     expect(req.headers['x-request-id']).toBe('first-id');
   });
 
+  it('x-request-id が配列かつ最初の要素が 128 文字超の場合 UUID に差し替えられる', () => {
+    const longId = 'a'.repeat(129);
+    const req = {
+      headers: { 'x-request-id': [longId, 'second-id'] },
+    } as unknown as Request;
+
+    correlationIdMiddleware(req, res as unknown as Response, next);
+
+    expect(req.headers['x-request-id']).toMatch(UUID_REGEX);
+  });
+
+  it('x-request-id が空文字列の場合 UUID が生成される', () => {
+    const req = {
+      headers: { 'x-request-id': '' },
+    } as unknown as Request;
+
+    correlationIdMiddleware(req, res as unknown as Response, next);
+
+    expect(req.headers['x-request-id']).toMatch(UUID_REGEX);
+  });
+
   it('x-request-id が 128 文字超の場合 UUID に差し替えられる', () => {
     const longId = 'a'.repeat(129);
     const req = {

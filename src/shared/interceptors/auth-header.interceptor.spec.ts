@@ -71,6 +71,16 @@ describe('AuthHeaderInterceptor', () => {
     expect(result.headers['X-API-Key']).toBeUndefined();
   });
 
+  it('BACKEND_API_KEY が空文字列の場合 X-API-Key ヘッダはセットされない', () => {
+    configService.get.mockReturnValue('');
+    interceptor.onModuleInit();
+
+    const config = { headers: {} as Record<string, string> };
+    const result = requestInterceptors[0](config) as typeof config;
+
+    expect(result.headers['X-API-Key']).toBeUndefined();
+  });
+
   it('インターセプタはリクエスト config をそのまま返す', () => {
     configService.get.mockReturnValue('my-key');
     interceptor.onModuleInit();
