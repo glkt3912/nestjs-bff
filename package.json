@@ -80,6 +80,17 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": { "statements": 70 }
+    },
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "src/generated/",
+      "src/main\\.ts",
+      "\\.module\\.ts$",
+      "src/users/",
+      "src/shared/config/"
+    ]
   }
 }
