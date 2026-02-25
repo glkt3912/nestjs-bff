@@ -3,14 +3,18 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { Request, Response } from 'express';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { getCorrelationId } from '../context/request-context';
 
 @Catch(AxiosError)
 export class AxiosExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AxiosExceptionFilter.name);
+  constructor(
+    @InjectPinoLogger(AxiosExceptionFilter.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   catch(exception: AxiosError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -23,6 +27,11 @@ export class AxiosExceptionFilter implements ExceptionFilter {
       | undefined;
 
     this.logger.error(
+      {
+        url: exception.config?.url,
+        status,
+        correlationId: getCorrelationId(),
+      },
       `Backend API error: ${exception.config?.url} → ${status}`,
     );
 

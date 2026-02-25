@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-02-23",
+  "lastUpdated": "2026-02-25",
   "documents": [
     {
       "id": "architecture",
@@ -91,6 +91,16 @@
       "industry": ["IT"],
       "topics": ["BFF", "APIキー", "型安全性", "セキュリティ", "チーム分業", "デプロイ"],
       "updatedAt": "2026-02-23"
+    }
+    ,{
+      "id": "structured-logging",
+      "path": "docs/structured-logging.md",
+      "title": "構造化ロギングと Correlation ID 伝播",
+      "description": "nestjs-pino による JSON 構造化ロギングの仕組み・設定方法、x-request-id を用いた Correlation ID 伝播パターン、AsyncLocalStorage によるリクエストコンテキスト管理、ログレベル制御",
+      "tags": ["ロギング", "監視", "nestjs-pino", "可観測性"],
+      "industry": ["IT"],
+      "topics": ["nestjs-pino", "pino-http", "pino-pretty", "AsyncLocalStorage", "CorrelationID", "x-request-id", "LoggerModule", "InjectPinoLogger", "LOG_LEVEL"],
+      "updatedAt": "2026-02-25"
     }
   ]
 }
