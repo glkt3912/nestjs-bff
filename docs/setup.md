@@ -37,6 +37,16 @@ HTTP_TIMEOUT=5000
 
 # BFF サーバーのポート
 PORT=3000
+
+# レート制限（TTL: ミリ秒、LIMIT: リクエスト数）
+THROTTLE_TTL=60000
+THROTTLE_LIMIT=100
+
+# モック・スタブモード（true にするとバックエンド不要でフィクスチャを返す）
+MOCK_MODE=false
+
+# ログレベル（trace / debug / info / warn / error / fatal）
+LOG_LEVEL=info
 ```
 
 ### 3. クライアントコードの生成
@@ -71,6 +81,9 @@ npm run start:dev
 | `npm run start:prod` | プロダクション起動 |
 | `npm run gen:all` | swagger 取得 → 生成 → 型チェック |
 | `npm run test` | ユニットテスト |
+| `npm run test:watch` | ウォッチモードでテスト実行 |
+| `npm run test:cov` | カバレッジレポート付きテスト |
+| `npm run test:e2e` | E2E テスト |
 | `npm run lint` | ESLint 実行 |
 
 ## トラブルシューティング
