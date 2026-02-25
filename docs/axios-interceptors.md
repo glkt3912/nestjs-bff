@@ -17,7 +17,7 @@
   │
   ▼ request interceptors（登録順に実行）
   │
-  │  AuthHeaderInterceptor  → X-API-Key ヘッダを付与
+  │  AuthHeaderInterceptor  → AUTH_TYPE に応じた認証ヘッダを付与
   │  LoggingInterceptor     → アウトバウンドリクエストをログ出力
   │  MockInterceptor        → MOCK_MODE=true のときフィクスチャを返す
   │
@@ -69,25 +69,46 @@ export class MyInterceptor implements OnModuleInit {
 
 ### AuthHeaderInterceptor
 
-**役割：** バックエンドへの全送信リクエストに API キーを付与する。
+**役割：** `AUTH_TYPE` 環境変数に応じた認証ヘッダをバックエンドへの全送信リクエストに付与する。
 
 ```typescript
+private authType: string;
+
 onModuleInit() {
+  this.authType = this.configService.get<string>('AUTH_TYPE', 'none');
+
   this.httpService.axiosRef.interceptors.request.use((config) => {
-    const apiKey = this.configService.get<string>('BACKEND_API_KEY');
-    if (apiKey) {
-      config.headers['X-API-Key'] = apiKey;
+    switch (this.authType) {
+      case 'api-key': {
+        const apiKey = this.configService.get<string>('BACKEND_API_KEY');
+        if (apiKey) config.headers['X-API-Key'] = apiKey;
+        break;
+      }
+      case 'bearer': {
+        const token = this.configService.get<string>('BACKEND_BEARER_TOKEN');
+        if (token) config.headers['Authorization'] = `Bearer ${token}`;
+        break;
+      }
+      case 'none':
+        break;
+      default:
+        this.logger.warn(`Unknown AUTH_TYPE: "${this.authType}", skipping auth header`);
+        break;
     }
     return config;
   });
 }
 ```
 
-| 項目 | 詳細 |
-|------|------|
-| 対象 | request |
-| 条件 | `BACKEND_API_KEY` が設定されている場合のみ付与 |
-| 設定 | `.env` の `BACKEND_API_KEY` |
+`AUTH_TYPE` は起動時に一度だけ読み込み、インスタンス変数にキャッシュする。
+不正値の場合は警告ログを出力してヘッダ付与をスキップする。
+
+| `AUTH_TYPE` | セットされるヘッダ | 参照する環境変数 |
+|-------------|-------------------|----------------|
+| `api-key` | `X-API-Key: <value>` | `BACKEND_API_KEY` |
+| `bearer` | `Authorization: Bearer <token>` | `BACKEND_BEARER_TOKEN` |
+| `none`（デフォルト） | なし | — |
+| 不正値 | なし（警告ログ） | — |
 
 ---
 
@@ -217,7 +238,7 @@ expect(result.headers['X-API-Key']).toBe('secret');
 ```text
 [BFF]
   ↓ request interceptor
-  │  - バックエンド用 API キーの付与（フロントに漏らしてはいけない）
+  │  - 認証ヘッダの付与（API キー / Bearer Token）（フロントに漏らしてはいけない）
   │  - Correlation ID の伝播
   │  - 構造化ロギング
   ↓
@@ -229,7 +250,7 @@ expect(result.headers['X-API-Key']).toBe('secret');
 | 処理 | フロント | BFF |
 |------|----------|-----|
 | JWT / Cookie 付与 | ✅ | — |
-| API キー付与 | ❌ 漏洩リスク | ✅ |
+| 認証ヘッダ付与（API キー / Bearer） | ❌ 漏洩リスク | ✅ |
 | ローディング UI | ✅ | — |
 | 構造化ロギング | — | ✅ |
 | Correlation ID 伝播 | △ 起点を作る | ✅ 引き継いで転送 |
@@ -243,7 +264,7 @@ expect(result.headers['X-API-Key']).toBe('secret');
 
 | ファイル | 役割 |
 |---------|------|
-| `src/shared/interceptors/auth-header.interceptor.ts` | API キー付与 |
+| `src/shared/interceptors/auth-header.interceptor.ts` | 認証ヘッダ付与（AUTH_TYPE により切り替え） |
 | `src/shared/interceptors/logging.interceptor.ts` | ロギング・ID 伝播 |
 | `src/shared/interceptors/mock.interceptor.ts` | モックモード |
 | `src/shared/shared.module.ts` | 3 つのインターセプターを `providers` に登録 |

@@ -53,6 +53,9 @@ Copy `.env` and adjust as needed. Key variables:
 | `HTTP_TIMEOUT` | `5000` | Axios timeout (ms) |
 | `THROTTLE_TTL` | `60000` | Rate limit window (ms) |
 | `THROTTLE_LIMIT` | `100` | Max requests per window |
+| `AUTH_TYPE` | `none` | `api-key` / `bearer` / `none` |
+| `BACKEND_API_KEY` | `` | `AUTH_TYPE=api-key` のとき `X-API-Key` ヘッダに設定 |
+| `BACKEND_BEARER_TOKEN` | `` | `AUTH_TYPE=bearer` のとき `Authorization: Bearer` ヘッダに設定 |
 
 **Tip:** Set `MOCK_MODE=true` to develop and test without a running backend.
 
@@ -80,6 +83,8 @@ Key directories:
 - `noImplicitAny: false` (type inference allowed)
 - Conventional Commits: `feat:` / `fix:` / `docs:` / `test:` / `refactor:` / `chore:`
 - Branch naming: `feat/feature-name`
+- **Commit messages: English**
+- **PR title and body: Japanese**
 
 ## Testing Policy
 
