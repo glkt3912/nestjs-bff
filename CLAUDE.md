@@ -83,6 +83,8 @@ Key directories:
 - `noImplicitAny: false` (type inference allowed)
 - Conventional Commits: `feat:` / `fix:` / `docs:` / `test:` / `refactor:` / `chore:`
 - Branch naming: `feat/feature-name`
+- **Commit messages: English**
+- **PR title and body: Japanese**
 
 ## Testing Policy
 
