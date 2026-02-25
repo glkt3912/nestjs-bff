@@ -13,10 +13,28 @@ export class AuthHeaderInterceptor implements OnModuleInit {
 
   onModuleInit() {
     this.httpService.axiosRef.interceptors.request.use((config) => {
-      const apiKey = this.configService.get<string>('BACKEND_API_KEY');
-      if (apiKey) {
-        config.headers['X-API-Key'] = apiKey;
+      const authType = this.configService.get<string>('AUTH_TYPE', 'none');
+
+      switch (authType) {
+        case 'api-key': {
+          const apiKey = this.configService.get<string>('BACKEND_API_KEY');
+          if (apiKey) {
+            config.headers['X-API-Key'] = apiKey;
+          }
+          break;
+        }
+        case 'bearer': {
+          const token = this.configService.get<string>('BACKEND_BEARER_TOKEN');
+          if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+          break;
+        }
+        case 'none':
+        default:
+          break;
       }
+
       return config;
     });
 
