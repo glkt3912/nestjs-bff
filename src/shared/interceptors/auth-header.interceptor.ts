@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthHeaderInterceptor implements OnModuleInit {
   private readonly logger = new Logger(AuthHeaderInterceptor.name);
+  private authType: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -12,10 +13,10 @@ export class AuthHeaderInterceptor implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.httpService.axiosRef.interceptors.request.use((config) => {
-      const authType = this.configService.get<string>('AUTH_TYPE', 'none');
+    this.authType = this.configService.get<string>('AUTH_TYPE', 'none');
 
-      switch (authType) {
+    this.httpService.axiosRef.interceptors.request.use((config) => {
+      switch (this.authType) {
         case 'api-key': {
           const apiKey = this.configService.get<string>('BACKEND_API_KEY');
           if (apiKey) {
@@ -31,7 +32,11 @@ export class AuthHeaderInterceptor implements OnModuleInit {
           break;
         }
         case 'none':
+          break;
         default:
+          this.logger.warn(
+            `Unknown AUTH_TYPE: "${this.authType}", skipping auth header`,
+          );
           break;
       }
 
