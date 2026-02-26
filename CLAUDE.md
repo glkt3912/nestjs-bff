@@ -56,6 +56,9 @@ Copy `.env` and adjust as needed. Key variables:
 | `AUTH_TYPE` | `none` | `api-key` / `bearer` / `none` |
 | `BACKEND_API_KEY` | `` | `AUTH_TYPE=api-key` のとき `X-API-Key` ヘッダに設定 |
 | `BACKEND_BEARER_TOKEN` | `` | `AUTH_TYPE=bearer` のとき `Authorization: Bearer` ヘッダに設定 |
+| `JWT_AUTH_ENABLED` | `false` | `true` でクライアント→BFF 間の JWT 検証を有効化 |
+| `JWT_SECRET` | `` | JWT 署名検証用の秘密鍵（`JWT_AUTH_ENABLED=true` のとき必須） |
+| `JWT_EXPIRES_IN` | `3600s` | JwtModule でトークン発行する際の有効期限 |
 
 **Tip:** Set `MOCK_MODE=true` to develop and test without a running backend.
 
@@ -64,7 +67,7 @@ Copy `.env` and adjust as needed. Key variables:
 Request processing order:
 
 1. **Express middleware**: `correlationIdMiddleware`, `pino-http`
-2. **NestJS globals**: `ThrottlerGuard`, `ValidationPipe`, `AxiosExceptionFilter`
+2. **NestJS globals**: `ThrottlerGuard`, `JwtAuthGuard`, `ValidationPipe`, `AxiosExceptionFilter`
 3. **Axios interceptors**: `LoggingInterceptor`, `AuthHeaderInterceptor`, `MockInterceptor`
 4. **Routes**: `/api/health` (HealthModule), `/api/*` (API modules)
 
@@ -148,3 +151,4 @@ Key files under `docs/`:
 | `axios-interceptors.md` | Axios interceptor implementation details |
 | `express-middleware.md` | Middleware implementation details |
 | `arguments-host.md` | ArgumentsHost mock patterns |
+| `jwt-authentication.md` | JWT auth guard, `@Public()` decorator, configuration |
