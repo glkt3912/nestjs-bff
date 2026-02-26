@@ -93,9 +93,12 @@ describe('MockInterceptor', () => {
     });
 
     it('フィクスチャが存在する場合は isMock エラーを reject する', async () => {
-      jest.spyOn(fs.promises, 'readFile').mockResolvedValue(
-        JSON.stringify([{ id: 1, name: 'Alice' }]) as unknown as string & Buffer,
-      );
+      jest
+        .spyOn(fs.promises, 'readFile')
+        .mockResolvedValue(
+          JSON.stringify([{ id: 1, name: 'Alice' }]) as unknown as string &
+            Buffer,
+        );
 
       const requestFn = requestInterceptors[0];
       await expect(
@@ -108,9 +111,11 @@ describe('MockInterceptor', () => {
     });
 
     it('フィクスチャが存在しない場合はリクエスト config をそのまま返す', async () => {
-      jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
-        Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
-      );
+      jest
+        .spyOn(fs.promises, 'readFile')
+        .mockRejectedValue(
+          Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+        );
       const config = { method: 'get', url: '/unknown' };
 
       const requestFn = requestInterceptors[0];
@@ -143,9 +148,11 @@ describe('MockInterceptor', () => {
 
     describe('URL 正規化', () => {
       beforeEach(() => {
-        jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
-          Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
-        );
+        jest
+          .spyOn(fs.promises, 'readFile')
+          .mockRejectedValue(
+            Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+          );
       });
 
       it('GET /users → GET_users.json として解決する', async () => {
@@ -187,9 +194,11 @@ describe('MockInterceptor', () => {
 
     describe('パストラバーサル防止', () => {
       it('../ を含む URL は config をそのまま返す', async () => {
-        jest.spyOn(fs.promises, 'readFile').mockRejectedValue(
-          Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
-        );
+        jest
+          .spyOn(fs.promises, 'readFile')
+          .mockRejectedValue(
+            Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+          );
         const config = { method: 'get', url: '../etc/passwd' };
 
         const requestFn = requestInterceptors[0];

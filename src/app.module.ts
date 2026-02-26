@@ -21,7 +21,8 @@ import { UsersModule } from './users/users.module';
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
           level: configService.get<string>('LOG_LEVEL', 'info'),
-          genReqId: (req) => (req.headers['x-request-id'] as string) ?? randomUUID(),
+          genReqId: (req) =>
+            (req.headers['x-request-id'] as string) ?? randomUUID(),
           transport:
             configService.get('NODE_ENV') !== 'production'
               ? {

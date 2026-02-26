@@ -79,7 +79,9 @@ describe('ThrottlerModule useFactory', () => {
 
   it('環境変数が未設定の場合はデフォルト値（ttl=60000, limit=100）を使用する', () => {
     const configService = {
-      get: jest.fn().mockImplementation((_key: string, defaultVal: number) => defaultVal),
+      get: jest
+        .fn()
+        .mockImplementation((_key: string, defaultVal: number) => defaultVal),
     } as unknown as ConfigService;
 
     const [config] = throttlerFactory(configService);

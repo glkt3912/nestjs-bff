@@ -30,7 +30,10 @@ export class MockInterceptor implements OnModuleInit {
       const normalized = url.replace(/^\//, '').replace(/\//g, '_');
 
       const fixturesDir = path.join(process.cwd(), 'fixtures');
-      const fixturePath = path.join(fixturesDir, `${method}_${normalized}.json`);
+      const fixturePath = path.join(
+        fixturesDir,
+        `${method}_${normalized}.json`,
+      );
 
       // [Critical] パストラバーサル防止
       if (!fixturePath.startsWith(fixturesDir + path.sep)) {
@@ -48,7 +51,11 @@ export class MockInterceptor implements OnModuleInit {
           return config;
         }
         this.logger.debug(`Mock: ${method} ${url} → ${fixturePath}`);
-        return Promise.reject({ isMock: true, data, status: 200 } satisfies MockError);
+        return Promise.reject({
+          isMock: true,
+          data,
+          status: 200,
+        } satisfies MockError);
       } catch {
         return config; // ファイルなし → 実リクエストへ
       }
@@ -63,6 +70,8 @@ export class MockInterceptor implements OnModuleInit {
       },
     );
 
-    this.logger.log('MockInterceptor: MOCK_MODE=true, fixture responses enabled');
+    this.logger.log(
+      'MockInterceptor: MOCK_MODE=true, fixture responses enabled',
+    );
   }
 }

@@ -19,7 +19,12 @@ import { MockInterceptor } from './interceptors/mock.interceptor';
       }),
     }),
   ],
-  providers: [DefaultApiProvider, LoggingInterceptor, AuthHeaderInterceptor, MockInterceptor],
+  providers: [
+    DefaultApiProvider,
+    LoggingInterceptor,
+    AuthHeaderInterceptor,
+    MockInterceptor,
+  ],
   exports: [HttpModule, DefaultApiProvider],
 })
 export class SharedModule {}

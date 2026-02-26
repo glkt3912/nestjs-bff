@@ -18,7 +18,12 @@ export class LoggingInterceptor implements OnModuleInit {
         config.headers['x-request-id'] = correlationId;
       }
       this.logger.info(
-        { direction: 'outbound', method: config.method?.toUpperCase(), url: config.url, correlationId },
+        {
+          direction: 'outbound',
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          correlationId,
+        },
         `→ ${config.method?.toUpperCase()} ${config.url}`,
       );
       return config;
@@ -28,7 +33,12 @@ export class LoggingInterceptor implements OnModuleInit {
       (res) => {
         const correlationId = getCorrelationId();
         this.logger.info(
-          { direction: 'inbound', status: res.status, url: res.config.url, correlationId },
+          {
+            direction: 'inbound',
+            status: res.status,
+            url: res.config.url,
+            correlationId,
+          },
           `← ${res.status} ${res.config.url}`,
         );
         return res;

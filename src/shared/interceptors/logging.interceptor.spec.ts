@@ -82,8 +82,14 @@ describe('LoggingInterceptor', () => {
     });
 
     it('correlationId が存在する場合 x-request-id ヘッダをセットする', async () => {
-      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('test-id-123');
-      const config = { method: 'get', url: '/users', headers: {} as Record<string, string> };
+      jest
+        .spyOn(requestContext, 'getCorrelationId')
+        .mockReturnValue('test-id-123');
+      const config = {
+        method: 'get',
+        url: '/users',
+        headers: {} as Record<string, string>,
+      };
 
       const result = (await requestInterceptors[0](config)) as typeof config;
 
@@ -92,7 +98,11 @@ describe('LoggingInterceptor', () => {
 
     it('correlationId が undefined の場合 x-request-id ヘッダをセットしない', async () => {
       jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
-      const config = { method: 'get', url: '/users', headers: {} as Record<string, string> };
+      const config = {
+        method: 'get',
+        url: '/users',
+        headers: {} as Record<string, string>,
+      };
 
       const result = (await requestInterceptors[0](config)) as typeof config;
 
@@ -100,8 +110,14 @@ describe('LoggingInterceptor', () => {
     });
 
     it('request ログに { direction, method, url, correlationId } が含まれる', async () => {
-      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('trace-abc');
-      const config = { method: 'get', url: '/users', headers: {} as Record<string, string> };
+      jest
+        .spyOn(requestContext, 'getCorrelationId')
+        .mockReturnValue('trace-abc');
+      const config = {
+        method: 'get',
+        url: '/users',
+        headers: {} as Record<string, string>,
+      };
 
       await requestInterceptors[0](config);
 
@@ -123,7 +139,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('response ログに { direction, status, url, correlationId } が含まれる', async () => {
-      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue('trace-abc');
+      jest
+        .spyOn(requestContext, 'getCorrelationId')
+        .mockReturnValue('trace-abc');
       const res = { status: 200, config: { url: '/users' } };
 
       await responseInterceptors[0].fulfilled(res);
@@ -151,7 +169,9 @@ describe('LoggingInterceptor', () => {
     it('response の rejected は Promise.reject でそのまま返す', async () => {
       const error = new Error('Network Error');
 
-      await expect(responseInterceptors[0].rejected(error)).rejects.toThrow('Network Error');
+      await expect(responseInterceptors[0].rejected(error)).rejects.toThrow(
+        'Network Error',
+      );
     });
   });
 });
