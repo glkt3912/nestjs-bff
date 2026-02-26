@@ -5,6 +5,7 @@ import {
   HttpHealthIndicator,
 } from '@nestjs/terminus';
 import { ConfigService } from '@nestjs/config';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('health')
 export class HealthController {
@@ -16,6 +17,7 @@ export class HealthController {
 
   @Get()
   @HealthCheck()
+  @Public()
   check() {
     const backendUrl = this.configService.getOrThrow<string>(
       'BACKEND_API_BASE_URL',
