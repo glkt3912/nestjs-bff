@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/docs-mcp-server/build/index.js"],
+      "env": {
+        "LOCAL_MODE": "true",
+        "PROJECT_ROOT": "/path/to/nestjs-bff",
+        "DOCS_BASE_PATH": "./docs"
+      }
+    }
+  }
+}
