@@ -98,3 +98,31 @@ npm run start:dev
 
 `gen:all` 実行後に `tsc --noEmit` が失敗する場合、バックエンドの API が変更されています。
 `src/users/users.service.ts` などの呼び出し箇所を更新してください。
+
+## MCP サーバーセットアップ（オプション）
+
+Claude Code でプロジェクトドキュメントを参照可能にするには
+[docs-mcp-server](https://github.com/your-org/docs-mcp-server) のセットアップが必要です。
+
+### 前提条件
+
+- `docs-mcp-server` をクローン済みでビルド済みであること
+
+### 手順
+
+1. `.mcp.json.example` をコピーして `.mcp.json` を作成
+
+   ```bash
+   cp .mcp.json.example .mcp.json
+   ```
+
+2. `.mcp.json` を開き、以下の 2 か所を自環境の絶対パスに書き換える
+
+   | プレースホルダー | 置き換え例 |
+   |----------------|-----------|
+   | `/path/to/docs-mcp-server/build/index.js` | `/home/user/dev/docs-mcp-server/build/index.js` |
+   | `/path/to/nestjs-bff` | `/home/user/dev/nestjs-bff` |
+
+3. Claude Code を再起動（`.mcp.json` は起動時に読み込まれる）
+
+設定後、Claude Code から `docs` MCP ツールでドキュメント検索が可能になります。
