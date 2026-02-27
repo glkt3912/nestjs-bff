@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { HealthModule } from './health/health.module';
 import { AxiosExceptionFilter } from './shared/filters/axios-exception.filter';
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
 
@@ -59,6 +60,7 @@ import { UsersModule } from './users/users.module';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_FILTER, useClass: AxiosExceptionFilter },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],
 })
 export class AppModule {}
