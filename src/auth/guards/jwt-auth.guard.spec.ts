@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -74,6 +74,29 @@ describe('JwtAuthGuard', () => {
       guard.canActivate(ctx);
       expect(superSpy).toHaveBeenCalledWith(ctx);
       superSpy.mockRestore();
+    });
+  });
+
+  describe('handleRequest', () => {
+    beforeEach(() => {
+      guard = buildGuard('true');
+    });
+
+    it('user が存在するとき user を返す', () => {
+      const user = { id: 1 };
+      expect(guard.handleRequest(null, user)).toBe(user);
+    });
+
+    it('user が null のとき UnauthorizedException をスローする', () => {
+      expect(() => guard.handleRequest(null, null)).toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('err が存在するとき UnauthorizedException をスローする', () => {
+      expect(() => guard.handleRequest(new Error('token expired'), null)).toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });
