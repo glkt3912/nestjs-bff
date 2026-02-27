@@ -99,6 +99,19 @@ describe('HttpExceptionFilter', () => {
     );
   });
 
+  it('オブジェクトレスポンスに message がないとき exception.message にフォールバックする', () => {
+    const exception = new HttpException(
+      { error: 'Bad Request' } as any,
+      HttpStatus.BAD_REQUEST,
+    );
+
+    filter.catch(exception, mockHost);
+
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Http Exception' }),
+    );
+  });
+
   it('logger.warn が status と path を含むオブジェクト付きで呼ばれる', () => {
     const exception = new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
