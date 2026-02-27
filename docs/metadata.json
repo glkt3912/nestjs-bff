@@ -146,11 +146,11 @@
       "id": "jwt-authentication",
       "path": "docs/jwt-authentication.md",
       "title": "JWT 認証",
-      "description": "クライアント→BFF 間の JWT Bearer Token 検証の仕組み・設定方法・@Public() デコレータによるエンドポイント単位のスキップ、JwtAuthGuard の有効化手順、401 レスポンス形式",
-      "tags": ["セキュリティ", "認証", "JWT", "Guard"],
+      "description": "クライアント→BFF 間の JWT Bearer Token 検証の仕組み・設定方法・@Public() デコレータ（独自実装）によるエンドポイント単位のスキップ、JwtAuthGuard の有効化手順、401 レスポンス形式、k8s / API Gateway / Service Mesh との役割分担・トレードオフ",
+      "tags": ["セキュリティ", "認証", "JWT", "Guard", "インフラ", "k8s"],
       "industry": ["IT"],
-      "topics": ["JwtAuthGuard", "JWT_AUTH_ENABLED", "JWT_SECRET", "PassportStrategy", "APP_GUARD", "Public", "401"],
-      "updatedAt": "2026-02-26"
+      "topics": ["JwtAuthGuard", "JWT_AUTH_ENABLED", "JWT_SECRET", "PassportStrategy", "APP_GUARD", "Public", "401", "SetMetadata", "Reflector", "APIGateway", "ServiceMesh", "mTLS", "認可"],
+      "updatedAt": "2026-02-27"
     }
   ]
 }
