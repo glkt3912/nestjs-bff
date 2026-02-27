@@ -17,12 +17,14 @@ export class LoggingInterceptor implements OnModuleInit {
       if (correlationId) {
         config.headers['x-request-id'] = correlationId;
       }
+      const isMultipart = config.data instanceof FormData;
       this.logger.info(
         {
           direction: 'outbound',
           method: config.method?.toUpperCase(),
           url: config.url,
           correlationId,
+          bodyLogged: !isMultipart,
         },
         `→ ${config.method?.toUpperCase()} ${config.url}`,
       );

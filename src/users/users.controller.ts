@@ -1,6 +1,16 @@
 // NOTE: このモジュールは BFF 実装パターンのリファレンス実装です。
 // 実際の機能追加時はこのパターンを参考に新モジュールを作成してください。
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseFilePipe,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserRequest } from './dto/create-user.request';
 import { UserResponse } from './dto/user.response';
@@ -24,5 +34,14 @@ export class UsersController {
   @Post()
   create(@Body() dto: CreateUserRequest): Promise<UserResponse> {
     return this.usersService.create(dto);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(
+    @UploadedFile(new ParseFilePipe({ fileIsRequired: true }))
+    file: Express.Multer.File,
+  ): Promise<{ filename: string; size: number }> {
+    return this.usersService.uploadFile(file);
   }
 }
