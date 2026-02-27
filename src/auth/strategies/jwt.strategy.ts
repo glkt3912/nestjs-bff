@@ -18,12 +18,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: enabled
-        ? configService.getOrThrow<string>('JWT_SECRET')
+        ? JwtStrategy.resolveSecret(configService)
         : 'jwt-auth-disabled',
     });
   }
 
   validate(payload: JwtPayload): JwtPayload {
     return payload; // Thin BFF: DBアクセスなし。req.userに格納
+  }
+
+  private static resolveSecret(configService: ConfigService): string {
+    const secret = configService.getOrThrow<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET must not be empty when JWT_AUTH_ENABLED=true');
+    }
+    return secret;
   }
 }

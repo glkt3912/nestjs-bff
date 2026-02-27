@@ -15,10 +15,17 @@ describe('JwtAuthGuard', () => {
   let reflector: Reflector;
   let configService: ConfigService;
 
-  const buildGuard = (jwtAuthEnabled: string | undefined) => {
+  const buildGuard = (
+    jwtAuthEnabled: string | undefined,
+    nodeEnv?: string,
+  ) => {
     reflector = { getAllAndOverride: jest.fn() } as unknown as Reflector;
     configService = {
-      get: jest.fn().mockReturnValue(jwtAuthEnabled),
+      get: jest.fn().mockImplementation((key: string) => {
+        if (key === 'JWT_AUTH_ENABLED') return jwtAuthEnabled;
+        if (key === 'NODE_ENV') return nodeEnv;
+        return undefined;
+      }),
     } as unknown as ConfigService;
     return new JwtAuthGuard(reflector, configService);
   };
@@ -34,6 +41,20 @@ describe('JwtAuthGuard', () => {
     it('canActivate は true を返す', () => {
       guard = buildGuard(undefined);
       expect(guard.canActivate(mockExecutionContext())).toBe(true);
+    });
+  });
+
+  describe('NODE_ENV が production かつ JWT_AUTH_ENABLED が true でないとき', () => {
+    it('警告ログを出力する', () => {
+      guard = buildGuard('false', 'production');
+      const warnSpy = jest
+        .spyOn((guard as any).logger, 'warn')
+        .mockImplementation(() => {});
+      guard.canActivate(mockExecutionContext());
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('JWT_AUTH_ENABLED is not true in production'),
+      );
+      warnSpy.mockRestore();
     });
   });
 
