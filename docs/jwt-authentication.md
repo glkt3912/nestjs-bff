@@ -98,7 +98,7 @@ k8s や API Gateway を使う構成では、JWT 検証が複数レイヤーで�
 ### ケース別の推奨設定
 
 | 構成 | 推奨設定 | 理由 |
-|---|---|---|
+| --- | --- | --- |
 | API Gateway なし・BFF が直接公開 | `JWT_AUTH_ENABLED=true` | Gateway がないため BFF が検証を担う |
 | API Gateway あり | `JWT_AUTH_ENABLED=false` | Gateway が検証済み。BFF で二重検証するのは CPU の無駄 |
 | Service Mesh（Istio 等）あり | `AUTH_TYPE=none` | Pod 間の mTLS が BFF→バックエンド認証を代替するため |
@@ -132,7 +132,7 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 ## 実装箇所
 
 | ファイル | 内容 |
-|---|---|
+| --- | --- |
 | `src/auth/decorators/public.decorator.ts` | `@Public()` デコレータ定義 |
 | `src/auth/strategies/jwt.strategy.ts` | Passport JWT ストラテジー（トークン検証・ペイロード取得） |
 | `src/auth/guards/jwt-auth.guard.ts` | `JwtAuthGuard`（有効/無効制御・`@Public()` スキップ） |
