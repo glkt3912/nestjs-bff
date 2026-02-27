@@ -17,8 +17,7 @@ export class LoggingInterceptor implements OnModuleInit {
       if (correlationId) {
         config.headers['x-request-id'] = correlationId;
       }
-      const contentType = config.headers['Content-Type']?.toString() ?? '';
-      const isMultipart = contentType.includes('multipart/form-data');
+      const isMultipart = config.data instanceof FormData;
       this.logger.info(
         {
           direction: 'outbound',

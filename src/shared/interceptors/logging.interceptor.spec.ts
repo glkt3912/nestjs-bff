@@ -132,15 +132,13 @@ describe('LoggingInterceptor', () => {
       );
     });
 
-    it('JSON リクエストのとき bodyLogged: true がログに含まれる', async () => {
+    it('data が FormData でないとき bodyLogged: true がログに含まれる', async () => {
       jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
       const config = {
         method: 'post',
         url: '/users',
-        headers: { 'Content-Type': 'application/json' } as Record<
-          string,
-          string
-        >,
+        headers: {} as Record<string, string>,
+        data: { name: 'Alice' },
       };
 
       await requestInterceptors[0](config);
@@ -151,15 +149,13 @@ describe('LoggingInterceptor', () => {
       );
     });
 
-    it('multipart リクエストのとき bodyLogged: false がログに含まれる', async () => {
+    it('data が FormData のとき bodyLogged: false がログに含まれる', async () => {
       jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
       const config = {
         method: 'post',
         url: '/upload',
-        headers: {
-          'Content-Type':
-            'multipart/form-data; boundary=----WebKitFormBoundary',
-        } as Record<string, string>,
+        headers: {} as Record<string, string>,
+        data: new FormData(),
       };
 
       await requestInterceptors[0](config);
