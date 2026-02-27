@@ -15,10 +15,7 @@ describe('JwtAuthGuard', () => {
   let reflector: Reflector;
   let configService: ConfigService;
 
-  const buildGuard = (
-    jwtAuthEnabled: string | undefined,
-    nodeEnv?: string,
-  ) => {
+  const buildGuard = (jwtAuthEnabled: string | undefined, nodeEnv?: string) => {
     reflector = { getAllAndOverride: jest.fn() } as unknown as Reflector;
     configService = {
       get: jest.fn().mockImplementation((key: string) => {
