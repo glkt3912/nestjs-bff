@@ -61,6 +61,31 @@ export class HealthController {
 }
 ```
 
+### `@Public()` は独自実装
+
+`@nestjs/passport` に相当するデコレータは存在しないため、NestJS 標準の `SetMetadata()` を使って独自実装しています。
+
+```typescript
+// src/auth/decorators/public.decorator.ts
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+デコレータはハンドラー（またはクラス）に `isPublic: true` というメタデータを付与するだけです。
+`JwtAuthGuard` 側で `Reflector` を使ってそのメタデータを読み取り、`true` であればガードをスキップします。
+
+```typescript
+// jwt-auth.guard.ts（抜粋）
+const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+  context.getHandler(), // メソッド単位で確認
+  context.getClass(),   // クラス単位で確認
+]);
+if (isPublic) return true;
+```
+
+`getAllAndOverride` はメソッドとクラスの両方を確認し、どちらかに `@Public()` があればスキップします。
+これは NestJS 公式ドキュメントで推奨されているパターンです。
+
 ## 認証エラー時のレスポンス
 
 トークンが無効・期限切れ・未指定の場合、以下のレスポンスを返します。
