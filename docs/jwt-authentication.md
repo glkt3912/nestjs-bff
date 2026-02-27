@@ -86,6 +86,40 @@ if (isPublic) return true;
 `getAllAndOverride` はメソッドとクラスの両方を確認し、どちらかに `@Public()` があればスキップします。
 これは NestJS 公式ドキュメントで推奨されているパターンです。
 
+## 環境変数と真偽値の比較
+
+コード内で `=== 'true'` という文字列比較が使われているのは、**環境変数はすべて文字列として扱われる** Node.js の仕様によるものです。
+
+```bash
+# .env
+JWT_AUTH_ENABLED=false  # ← JavaScript には文字列 "false" として渡る
+```
+
+```typescript
+process.env.JWT_AUTH_ENABLED  // => "false"（string、boolean ではない）
+```
+
+文字列 `"false"` は空でも `undefined` でもないため、そのまま真偽値として評価すると **truthy** になります。
+
+```typescript
+// ❌ 意図しない動作：文字列 "false" は truthy
+if (process.env.JWT_AUTH_ENABLED) { ... }  // JWT_AUTH_ENABLED=false でも入ってしまう
+
+// ✅ 正しい比較
+if (configService.get('JWT_AUTH_ENABLED') === 'true') { ... }
+```
+
+### 環境変数以外は型が保持される
+
+この問題は環境変数固有です。JSON（HTTP通信）はパース時に型が復元されます。
+
+| 値の来源 | 型 | 比較方法 |
+| --- | --- | --- |
+| 環境変数（`.env`） | 常に `string` | `=== 'true'` |
+| URL クエリパラメータ | 常に `string` | `=== 'true'` |
+| JSON レスポンスボディ | 元の型が保持 | `=== true` |
+| JSON リクエストボディ | 元の型が保持 | `=== true` |
+
 ## Strategy（ストラテジー）レイヤーについて
 
 `Strategy` は Passport の用語で、**「どうやって認証情報を取り出し、検証するか」の方式**を表します。
