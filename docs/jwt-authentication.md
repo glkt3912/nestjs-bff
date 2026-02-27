@@ -29,18 +29,18 @@ Controller → Service → バックエンドAPI
 
 ## 設定
 
+> **BFF はトークンを検証するのみで発行しません。** JWT の発行はフロントエンドや認証サーバー側の責務です。
+
 | 環境変数 | 説明 | デフォルト値 |
 |---|---|---|
 | `JWT_AUTH_ENABLED` | `true` にすると JWT 検証を有効化 | `false` |
 | `JWT_SECRET` | JWT 署名検証に使う秘密鍵 | （空） |
-| `JWT_EXPIRES_IN` | トークン有効期限（JwtModule 発行時） | `3600s` |
 
 ### 設定例
 
 ```env
 JWT_AUTH_ENABLED=true
 JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=3600s
 ```
 
 > `JWT_AUTH_ENABLED=false`（デフォルト）の場合、`JWT_SECRET` が未設定でも起動できます。
@@ -226,10 +226,9 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 @Module({
   imports: [
     PassportModule,          // Passport を NestJS で使うための基盤
-    JwtModule.registerAsync( // JWT の署名検証・発行設定
+    JwtModule.registerAsync( // JWT の署名検証設定
       useFactory: (c) => ({
         secret: enabled ? c.getOrThrow('JWT_SECRET') : 'jwt-auth-disabled',
-        signOptions: { expiresIn: c.get('JWT_EXPIRES_IN', '3600s') },
       })
     ),
   ],
@@ -243,7 +242,7 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 | 要素 | 種別 | 役割 |
 | --- | --- | --- |
 | `PassportModule` | import | Passport を NestJS の DI に統合する基盤。これがないと `PassportStrategy` が動かない |
-| `JwtModule.registerAsync` | import | `secret` と `expiresIn` を環境変数から非同期で読み込んで設定 |
+| `JwtModule.registerAsync` | import | `secret` を環境変数から非同期で読み込んで設定（検証のみ・発行なし） |
 | `JwtStrategy` | provider | Strategy の実体。DI コンテナに登録することで `AuthGuard('jwt')` から呼び出せるようになる |
 | `JwtAuthGuard` | provider + export | Guard の実体。`exports` に入れることで `AppModule` が `APP_GUARD` として使える |
 
@@ -267,4 +266,4 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 | `src/auth/auth.module.ts` | Auth モジュール定義 |
 | `src/app.module.ts` | `AuthModule` インポート・`JwtAuthGuard` を `APP_GUARD` 登録 |
 | `src/health/health.controller.ts` | ヘルスチェックに `@Public()` 追加 |
-| `.env.example` | `JWT_AUTH_ENABLED` / `JWT_SECRET` / `JWT_EXPIRES_IN` 追記 |
+| `.env.example` | `JWT_AUTH_ENABLED` / `JWT_SECRET` 追記 |

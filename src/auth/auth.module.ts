@@ -17,7 +17,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
           secret: enabled
             ? c.getOrThrow<string>('JWT_SECRET')
             : 'jwt-auth-disabled',
-          signOptions: { expiresIn: c.get<string>('JWT_EXPIRES_IN', '3600s') },
         };
       },
     }),

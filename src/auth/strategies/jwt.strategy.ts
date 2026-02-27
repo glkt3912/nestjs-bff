@@ -12,8 +12,7 @@ export interface JwtPayload {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
-    const enabled =
-      configService.get<string>('JWT_AUTH_ENABLED') === 'true';
+    const enabled = configService.get<string>('JWT_AUTH_ENABLED') === 'true';
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -30,7 +29,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private static resolveSecret(configService: ConfigService): string {
     const secret = configService.getOrThrow<string>('JWT_SECRET');
     if (!secret) {
-      throw new Error('JWT_SECRET must not be empty when JWT_AUTH_ENABLED=true');
+      throw new Error(
+        'JWT_SECRET must not be empty when JWT_AUTH_ENABLED=true',
+      );
     }
     return secret;
   }
