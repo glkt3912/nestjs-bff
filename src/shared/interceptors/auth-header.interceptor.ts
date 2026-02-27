@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getUserId } from '../context/request-context';
 
 @Injectable()
 export class AuthHeaderInterceptor implements OnModuleInit {
@@ -38,6 +39,11 @@ export class AuthHeaderInterceptor implements OnModuleInit {
             `Unknown AUTH_TYPE: "${this.authType}", skipping auth header`,
           );
           break;
+      }
+
+      const userId = getUserId();
+      if (userId) {
+        config.headers['X-User-Id'] = userId;
       }
 
       return config;
