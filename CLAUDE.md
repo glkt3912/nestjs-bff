@@ -54,10 +54,10 @@ Copy `.env` and adjust as needed. Key variables:
 | `THROTTLE_TTL` | `60000` | Rate limit window (ms) |
 | `THROTTLE_LIMIT` | `100` | Max requests per window |
 | `AUTH_TYPE` | `none` | `api-key` / `bearer` / `none` |
-| `BACKEND_API_KEY` | `` | `AUTH_TYPE=api-key` のとき `X-API-Key` ヘッダに設定 |
-| `BACKEND_BEARER_TOKEN` | `` | `AUTH_TYPE=bearer` のとき `Authorization: Bearer` ヘッダに設定 |
-| `JWT_AUTH_ENABLED` | `false` | `true` でクライアント→BFF 間の JWT 検証を有効化 |
-| `JWT_SECRET` | `` | JWT 署名検証用の秘密鍵（`JWT_AUTH_ENABLED=true` のとき必須） |
+| `BACKEND_API_KEY` | `` | Sets `X-API-Key` header when `AUTH_TYPE=api-key` |
+| `BACKEND_BEARER_TOKEN` | `` | Sets `Authorization: Bearer` header when `AUTH_TYPE=bearer` |
+| `JWT_AUTH_ENABLED` | `false` | Set `true` to enable JWT verification on client→BFF requests |
+| `JWT_SECRET` | `` | Secret key for JWT signature verification (required when `JWT_AUTH_ENABLED=true`) |
 
 **Tip:** Set `MOCK_MODE=true` to develop and test without a running backend.
 
@@ -69,7 +69,7 @@ Request processing order:
 2. **NestJS globals**: `ThrottlerGuard`, `JwtAuthGuard`, `ValidationPipe`, `AxiosExceptionFilter`
 3. **Axios interceptors**: `LoggingInterceptor`, `AuthHeaderInterceptor`, `MockInterceptor`
 4. **Routes**: `/api/health` (HealthModule), `/api/*` (API modules)
-5. **Swagger UI**: `/api-docs` (JWT Bearer 認証スキーマ付き)
+5. **Swagger UI**: `/api-docs` (with JWT Bearer auth schema)
 
 Key directories:
 
