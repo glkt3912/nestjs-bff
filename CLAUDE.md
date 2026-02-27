@@ -69,6 +69,7 @@ Request processing order:
 2. **NestJS globals**: `ThrottlerGuard`, `JwtAuthGuard`, `ValidationPipe`, `AxiosExceptionFilter`
 3. **Axios interceptors**: `LoggingInterceptor`, `AuthHeaderInterceptor`, `MockInterceptor`
 4. **Routes**: `/api/health` (HealthModule), `/api/*` (API modules)
+5. **Swagger UI**: `/api-docs` (JWT Bearer 認証スキーマ付き)
 
 Key directories:
 
@@ -117,7 +118,8 @@ Coverage is enforced at 70% statements globally. `src/generated/`, `src/users/`,
 3. Handwrite Controller, Service, and DTOs in `src/<module>/`
 4. Controller and Service must only delegate — no logic
 5. Add `@Expose()` to handwritten response DTOs for filtering (see `docs/response-filtering.md`)
-6. No tests needed unless you extend the infrastructure layer
+6. Add `@ApiBearerAuth()` to Controllers that require JWT auth (i.e. no `@Public()` decorator)
+7. No tests needed unless you extend the infrastructure layer
 
 ## MCP Docs Server
 
