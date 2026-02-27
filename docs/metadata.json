@@ -29,7 +29,7 @@
       "description": "新しいエンドポイントの追加手順、手書きDTOの実装方法、ファイルアップロードプロキシの実装パターン、検証手順、ファイル構造の規約",
       "tags": ["開発", "実装", "ガイド"],
       "industry": ["IT"],
-      "topics": ["エンドポイント追加", "DTO", "class-validator", "コード生成", "テスト", "FileInterceptor", "multipart", "FormData", "MulterModule", "UPLOAD_MAX_FILE_SIZE"],
+      "topics": ["エンドポイント追加", "DTO", "class-validator", "コード生成", "テスト", "FileInterceptor", "multipart", "FormData", "MulterModule", "UPLOAD_MAX_FILE_SIZE", "ParseFilePipe"],
       "updatedAt": "2026-02-28"
     },
     {
