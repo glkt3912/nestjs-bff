@@ -4,6 +4,8 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
 import { LoggerModule } from 'nestjs-pino';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { HealthModule } from './health/health.module';
 import { AxiosExceptionFilter } from './shared/filters/axios-exception.filter';
 import { SharedModule } from './shared/shared.module';
@@ -51,9 +53,11 @@ import { UsersModule } from './users/users.module';
     SharedModule,
     HealthModule,
     UsersModule,
+    AuthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_FILTER, useClass: AxiosExceptionFilter },
   ],
 })
