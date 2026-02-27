@@ -58,6 +58,7 @@ Copy `.env` and adjust as needed. Key variables:
 | `BACKEND_BEARER_TOKEN` | `` | Sets `Authorization: Bearer` header when `AUTH_TYPE=bearer` |
 | `JWT_AUTH_ENABLED` | `false` | Set `true` to enable JWT verification on client→BFF requests |
 | `JWT_SECRET` | `` | Secret key for JWT signature verification (required when `JWT_AUTH_ENABLED=true`) |
+| `UPLOAD_MAX_FILE_SIZE` | `10485760` | Max file size for multipart uploads in bytes (default 10 MB) |
 
 **Tip:** Set `MOCK_MODE=true` to develop and test without a running backend.
 
