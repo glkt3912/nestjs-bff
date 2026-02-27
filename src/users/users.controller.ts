@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseFilePipe,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -38,7 +39,8 @@ export class UsersController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(new ParseFilePipe({ fileIsRequired: true }))
+    file: Express.Multer.File,
   ): Promise<{ filename: string; size: number }> {
     return this.usersService.uploadFile(file);
   }
