@@ -149,6 +149,23 @@ describe('LoggingInterceptor', () => {
       );
     });
 
+    it('data が undefined（GET リクエスト等）のとき bodyLogged: true がログに含まれる', async () => {
+      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
+      const config = {
+        method: 'get',
+        url: '/users',
+        headers: {} as Record<string, string>,
+        data: undefined,
+      };
+
+      await requestInterceptors[0](config);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ bodyLogged: true }),
+        expect.any(String),
+      );
+    });
+
     it('data が FormData のとき bodyLogged: false がログに含まれる', async () => {
       jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
       const config = {
