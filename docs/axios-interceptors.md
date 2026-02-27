@@ -69,7 +69,7 @@ export class MyInterceptor implements OnModuleInit {
 
 ### AuthHeaderInterceptor
 
-**役割：** `AUTH_TYPE` 環境変数に応じた認証ヘッダをバックエンドへの全送信リクエストに付与する。
+**役割：** `AUTH_TYPE` 環境変数に応じた認証ヘッダと、JWT 認証済みユーザーの ID（`X-User-Id`）をバックエンドへの全送信リクエストに付与する。
 
 ```typescript
 private authType: string;
@@ -95,20 +95,24 @@ onModuleInit() {
         this.logger.warn(`Unknown AUTH_TYPE: "${this.authType}", skipping auth header`);
         break;
     }
+
+    // JWT 認証済みユーザーの sub クレームを転送（JWT_AUTH_ENABLED=false のとき未設定）
+    const userId = getUserId();
+    if (userId) config.headers['X-User-Id'] = userId;
+
     return config;
   });
 }
 ```
 
 `AUTH_TYPE` は起動時に一度だけ読み込み、インスタンス変数にキャッシュする。
-不正値の場合は警告ログを出力してヘッダ付与をスキップする。
+`getUserId()` は `UserContextInterceptor` が AsyncLocalStorage に格納したユーザー ID を読み取る。
 
-| `AUTH_TYPE` | セットされるヘッダ | 参照する環境変数 |
-|-------------|-------------------|----------------|
-| `api-key` | `X-API-Key: <value>` | `BACKEND_API_KEY` |
-| `bearer` | `Authorization: Bearer <token>` | `BACKEND_BEARER_TOKEN` |
-| `none`（デフォルト） | なし | — |
-| 不正値 | なし（警告ログ） | — |
+| ヘッダ | 設定条件 | 参照元 |
+|--------|---------|--------|
+| `X-API-Key: <value>` | `AUTH_TYPE=api-key` かつ `BACKEND_API_KEY` 設定済み | 環境変数 |
+| `Authorization: Bearer <token>` | `AUTH_TYPE=bearer` かつ `BACKEND_BEARER_TOKEN` 設定済み | 環境変数 |
+| `X-User-Id: <sub>` | `JWT_AUTH_ENABLED=true` かつ JWT 検証成功 | AsyncLocalStorage（req.user.sub） |
 
 ---
 
@@ -239,6 +243,7 @@ expect(result.headers['X-API-Key']).toBe('secret');
 [BFF]
   ↓ request interceptor
   │  - 認証ヘッダの付与（API キー / Bearer Token）（フロントに漏らしてはいけない）
+  │  - JWT 認証済みユーザー ID の転送（X-User-Id）
   │  - Correlation ID の伝播
   │  - 構造化ロギング
   ↓
@@ -251,6 +256,7 @@ expect(result.headers['X-API-Key']).toBe('secret');
 |------|----------|-----|
 | JWT / Cookie 付与 | ✅ | — |
 | 認証ヘッダ付与（API キー / Bearer） | ❌ 漏洩リスク | ✅ |
+| X-User-Id 転送（JWT 検証済みユーザー ID） | — | ✅ |
 | ローディング UI | ✅ | — |
 | 構造化ロギング | — | ✅ |
 | Correlation ID 伝播 | △ 起点を作る | ✅ 引き継いで転送 |
@@ -264,7 +270,8 @@ expect(result.headers['X-API-Key']).toBe('secret');
 
 | ファイル | 役割 |
 |---------|------|
-| `src/shared/interceptors/auth-header.interceptor.ts` | 認証ヘッダ付与（AUTH_TYPE により切り替え） |
-| `src/shared/interceptors/logging.interceptor.ts` | ロギング・ID 伝播 |
+| `src/shared/interceptors/auth-header.interceptor.ts` | 認証ヘッダ付与（AUTH_TYPE 切り替え・X-User-Id 転送） |
+| `src/shared/interceptors/user-context.interceptor.ts` | JWT ユーザー情報を AsyncLocalStorage に格納（NestInterceptor） |
+| `src/shared/interceptors/logging.interceptor.ts` | ロギング・Correlation ID 伝播 |
 | `src/shared/interceptors/mock.interceptor.ts` | モックモード |
-| `src/shared/shared.module.ts` | 3 つのインターセプターを `providers` に登録 |
+| `src/shared/shared.module.ts` | Axios インターセプターを `providers` に登録 |
