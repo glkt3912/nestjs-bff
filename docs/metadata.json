@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-02-26",
+  "lastUpdated": "2026-02-28",
   "documents": [
     {
       "id": "architecture",
@@ -151,6 +151,16 @@
       "industry": ["IT"],
       "topics": ["JwtAuthGuard", "JWT_AUTH_ENABLED", "JWT_SECRET", "PassportStrategy", "APP_GUARD", "Public", "401", "SetMetadata", "Reflector", "APIGateway", "ServiceMesh", "mTLS", "認可"],
       "updatedAt": "2026-02-27"
+    }
+    ,{
+      "id": "guard-interceptor-middleware",
+      "path": "docs/guard-interceptor-middleware.md",
+      "title": "Guard / Interceptor / Middleware",
+      "description": "NestJS のリクエスト処理パイプラインにおける Guard・Interceptor・Middleware の役割の違い・実行順序・選び方の判断基準。このプロジェクトでの実装例（JwtAuthGuard・UserContextInterceptor・correlationIdMiddleware）を交えて解説",
+      "tags": ["NestJS", "アーキテクチャ", "Guard", "Interceptor", "ミドルウェア"],
+      "industry": ["IT"],
+      "topics": ["Guard", "Interceptor", "Middleware", "canActivate", "NestInterceptor", "ExecutionContext", "APP_GUARD", "APP_INTERCEPTOR", "実行順序", "認証", "認可"],
+      "updatedAt": "2026-02-28"
     }
   ]
 }
