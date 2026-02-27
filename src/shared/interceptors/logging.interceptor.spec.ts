@@ -131,6 +131,44 @@ describe('LoggingInterceptor', () => {
         expect.any(String),
       );
     });
+
+    it('JSON リクエストのとき bodyLogged: true がログに含まれる', async () => {
+      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
+      const config = {
+        method: 'post',
+        url: '/users',
+        headers: { 'Content-Type': 'application/json' } as Record<
+          string,
+          string
+        >,
+      };
+
+      await requestInterceptors[0](config);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ bodyLogged: true }),
+        expect.any(String),
+      );
+    });
+
+    it('multipart リクエストのとき bodyLogged: false がログに含まれる', async () => {
+      jest.spyOn(requestContext, 'getCorrelationId').mockReturnValue(undefined);
+      const config = {
+        method: 'post',
+        url: '/upload',
+        headers: {
+          'Content-Type':
+            'multipart/form-data; boundary=----WebKitFormBoundary',
+        } as Record<string, string>,
+      };
+
+      await requestInterceptors[0](config);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ bodyLogged: false }),
+        expect.any(String),
+      );
+    });
   });
 
   describe('response インターセプタ', () => {
