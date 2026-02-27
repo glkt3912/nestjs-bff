@@ -184,6 +184,45 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 
 バックエンドにユーザー情報を渡したい場合は `AuthHeaderInterceptor` を拡張して `X-User-Id` 等のヘッダを付与する実装が必要です（本テンプレートのスコープ外）。
 
+## AuthModule の構成
+
+`AuthModule` は JWT 認証に必要なパーツを一箇所にまとめたモジュールです。
+
+```typescript
+@Module({
+  imports: [
+    PassportModule,          // Passport を NestJS で使うための基盤
+    JwtModule.registerAsync( // JWT の署名検証・発行設定
+      useFactory: (c) => ({
+        secret: enabled ? c.getOrThrow('JWT_SECRET') : 'jwt-auth-disabled',
+        signOptions: { expiresIn: c.get('JWT_EXPIRES_IN', '3600s') },
+      })
+    ),
+  ],
+  providers: [JwtStrategy, JwtAuthGuard], // DI コンテナに登録
+  exports:   [JwtAuthGuard],              // 他モジュールから使えるように公開
+})
+```
+
+### 各要素の役割
+
+| 要素 | 種別 | 役割 |
+| --- | --- | --- |
+| `PassportModule` | import | Passport を NestJS の DI に統合する基盤。これがないと `PassportStrategy` が動かない |
+| `JwtModule.registerAsync` | import | `secret` と `expiresIn` を環境変数から非同期で読み込んで設定 |
+| `JwtStrategy` | provider | Strategy の実体。DI コンテナに登録することで `AuthGuard('jwt')` から呼び出せるようになる |
+| `JwtAuthGuard` | provider + export | Guard の実体。`exports` に入れることで `AppModule` が `APP_GUARD` として使える |
+
+### `registerAsync` を使う理由
+
+環境変数は起動時に非同期で読み込まれるため、同期的な `register()` では `ConfigService` を注入できません。
+`registerAsync` + `useFactory` を使うことで、`ConfigService` が解決されてから設定値を渡せます。
+
+### `JwtStrategy` を export しない理由
+
+`JwtStrategy` は `AuthGuard('jwt')` が内部的に名前（`'jwt'`）で解決するため、
+`AppModule` から直接参照する必要がありません。`providers` に登録するだけで十分です。
+
 ## 実装箇所
 
 | ファイル | 内容 |
