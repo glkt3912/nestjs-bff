@@ -86,6 +86,36 @@ if (isPublic) return true;
 `getAllAndOverride` はメソッドとクラスの両方を確認し、どちらかに `@Public()` があればスキップします。
 これは NestJS 公式ドキュメントで推奨されているパターンです。
 
+## Strategy（ストラテジー）レイヤーについて
+
+`Strategy` は Passport の用語で、**「どうやって認証情報を取り出し、検証するか」の方式**を表します。
+GoF デザインパターンの Strategy パターンに由来し、認証方式をクラスとして切り出すことで交換可能にする設計です。
+
+### レイヤー構成
+
+```text
+JwtAuthGuard              ← 「通す/通さない」の判断
+    │
+    └─ AuthGuard('jwt')   ← Passport を呼び出す
+           │
+           └─ JwtStrategy ← 「JWT をどう取り出してどう検証するか」の方式定義
+                  │
+                  └─ validate() ← 検証成功後に req.user へ格納する値を返す
+```
+
+### JwtStrategy が定義する内容
+
+```typescript
+super({
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // どこから取り出すか
+  ignoreExpiration: false,                                  // 有効期限を検証するか
+  secretOrKey: ...,                                         // 何で署名検証するか
+});
+```
+
+方式を変えたい場合（Cookie から取り出す、RSA 鍵で検証するなど）は Strategy だけを差し替えれば済み、Guard 側は変更不要です。
+Passport はこの仕組みで JWT・OAuth・Google・GitHub など 100 以上の認証方式を同一インターフェースで扱えるようにしています。
+
 ## 認証エラー時のレスポンス
 
 トークンが無効・期限切れ・未指定の場合、以下のレスポンスを返します。
