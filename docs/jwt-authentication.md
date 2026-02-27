@@ -16,12 +16,19 @@
 JwtAuthGuard (APP_GUARD)
     │ JWT_AUTH_ENABLED=false → 全通過
     │ @Public() → スキップ
-    │ トークン検証失敗 → 401 Unauthorized
+    │ トークン検証失敗 → 401 Unauthorized（HttpExceptionFilter で整形）
     ▼
-Controller → Service → バックエンドAPI
-                            ↑
-                  AuthHeaderInterceptor（既存）
-                  BFF→バックエンド認証は別レイヤー
+UserContextInterceptor (APP_INTERCEPTOR)
+    │ req.user.sub を AsyncLocalStorage に格納
+    ▼
+Controller → Service
+    │
+    ▼
+AuthHeaderInterceptor (Axios interceptor)
+    │ AUTH_TYPE に応じた認証ヘッダを付与
+    │ AsyncLocalStorage から userId を読み取り X-User-Id ヘッダを付与
+    ▼
+バックエンド API (X-User-Id ヘッダを受け取る)
 ```
 
 `ThrottlerGuard` → `JwtAuthGuard` の順で `APP_GUARD` に登録されているため、
@@ -152,7 +159,8 @@ Passport はこの仕組みで JWT・OAuth・Google・GitHub など 100 以上�
 
 ## 認証エラー時のレスポンス
 
-トークンが無効・期限切れ・未指定の場合、以下のレスポンスを返します。
+トークンが無効・期限切れ・未指定の場合、`HttpExceptionFilter` を経由して以下のレスポンスを返します。
+`AxiosExceptionFilter` と同じ形式で統一されています。
 
 ```http
 HTTP/1.1 401 Unauthorized
@@ -160,9 +168,14 @@ Content-Type: application/json
 
 {
   "statusCode": 401,
+  "timestamp": "2026-02-28T00:00:00.000Z",
+  "path": "/api/users",
   "message": "Unauthorized"
 }
 ```
+
+`JwtAuthGuard.handleRequest` が `UnauthorizedException` を明示的にスローすることで、
+Passport のデフォルト動作をバイパスし `HttpExceptionFilter` に処理を委譲しています。
 
 ## インフラとの統合：役割分担の考え方
 
@@ -214,9 +227,21 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 
 ### 認可（何をしていいか？）について
 
-現在の実装は**認証（誰か？）のみ**を担います。JwtAuthGuard は検証後にペイロードを `req.user` に格納するだけで、バックエンドにユーザー情報を転送しません。そのため認可（このユーザーはこのリソースにアクセスしていいか？）は引き続きバックエンドが担います。
+BFF は**認証（誰か？）**を担い、認可（このユーザーはこのリソースにアクセスしていいか？）はバックエンドが担います。
 
-バックエンドにユーザー情報を渡したい場合は `AuthHeaderInterceptor` を拡張して `X-User-Id` 等のヘッダを付与する実装が必要です（本テンプレートのスコープ外）。
+BFF は `UserContextInterceptor` と `AuthHeaderInterceptor` を通じて、検証済みユーザーの `sub` クレームを `X-User-Id` ヘッダでバックエンドへ転送します。
+
+```text
+JwtAuthGuard → req.user.sub = "user-123"
+    ↓
+UserContextInterceptor → AsyncLocalStorage に userId = "user-123" を格納
+    ↓
+AuthHeaderInterceptor → X-User-Id: user-123 をバックエンドリクエストに付与
+    ↓
+バックエンド → X-User-Id ヘッダを読み取り、ロールベース認可などを実施
+```
+
+`JWT_AUTH_ENABLED=false` のとき `req.user` が存在しないため `X-User-Id` ヘッダは付与されません。
 
 ## AuthModule の構成
 
@@ -262,8 +287,11 @@ API Gateway 導入後     → JWT_AUTH_ENABLED=false でGatewayに委譲
 | --- | --- |
 | `src/auth/decorators/public.decorator.ts` | `@Public()` デコレータ定義 |
 | `src/auth/strategies/jwt.strategy.ts` | Passport JWT ストラテジー（トークン検証・ペイロード取得） |
-| `src/auth/guards/jwt-auth.guard.ts` | `JwtAuthGuard`（有効/無効制御・`@Public()` スキップ） |
+| `src/auth/guards/jwt-auth.guard.ts` | `JwtAuthGuard`（有効/無効制御・`@Public()` スキップ・`handleRequest` オーバーライド） |
 | `src/auth/auth.module.ts` | Auth モジュール定義 |
-| `src/app.module.ts` | `AuthModule` インポート・`JwtAuthGuard` を `APP_GUARD` 登録 |
+| `src/shared/interceptors/user-context.interceptor.ts` | `UserContextInterceptor`（req.user.sub を AsyncLocalStorage に格納） |
+| `src/shared/filters/http-exception.filter.ts` | `HttpExceptionFilter`（401 等の HTTP エラーを統一フォーマットで返す） |
+| `src/shared/context/request-context.ts` | `RequestContext`（correlationId + userId）・`getUserId()` ヘルパー |
+| `src/app.module.ts` | `AuthModule` インポート・`JwtAuthGuard` を `APP_GUARD`・`UserContextInterceptor` を `APP_INTERCEPTOR` 登録 |
 | `src/health/health.controller.ts` | ヘルスチェックに `@Public()` 追加 |
 | `.env.example` | `JWT_AUTH_ENABLED` / `JWT_SECRET` 追記 |

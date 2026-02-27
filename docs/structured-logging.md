@@ -131,6 +131,8 @@ storage.run({ correlationId: 'bbb' }, async () => {
 
 本プロジェクトでは `correlationIdMiddleware` が `asyncLocalStorage.run()` でコンテキストを確立し、
 `LoggingInterceptor` や `AxiosExceptionFilter` から `getCorrelationId()` で取得しています。
+また、`UserContextInterceptor` が JWT 検証後に `store.userId` を書き込み、
+`AuthHeaderInterceptor` が `getUserId()` で読み取り `X-User-Id` ヘッダに付与します。
 
 ---
 
@@ -163,15 +165,22 @@ pino-http middleware
   - 全 HTTP request/response を JSON で自動ロギング
   │
   ▼
+JwtAuthGuard → req.user に JWT ペイロードを格納
+  │
+  ▼
+UserContextInterceptor (NestJS APP_INTERCEPTOR)
+  - req.user.sub を AsyncLocalStorage の store.userId に格納
+  │
+  ▼
 NestJS route handler
   │
-  ▼ LoggingInterceptor (Axios interceptor)
-  - getCorrelationId() で AsyncLocalStorage から取得
-  - Axios request headers に x-request-id をセット
+  ▼ AuthHeaderInterceptor / LoggingInterceptor (Axios interceptors)
+  - getCorrelationId() → x-request-id ヘッダに付与
+  - getUserId()        → X-User-Id ヘッダに付与（JWT_AUTH_ENABLED=true のとき）
   - 構造化ログ { direction, method, url, correlationId }
   │
   ▼
-Backend API (x-request-id ヘッダを受け取る)
+Backend API (x-request-id・X-User-Id ヘッダを受け取る)
 ```
 
 ### ミドルウェア実行順序の根拠
@@ -195,12 +204,17 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 interface RequestContext {
   correlationId: string;
+  userId?: string; // JWT 検証済みユーザーの sub クレーム（UserContextInterceptor が格納）
 }
 
 export const asyncLocalStorage = new AsyncLocalStorage<RequestContext>();
 
 export function getCorrelationId(): string | undefined {
   return asyncLocalStorage.getStore()?.correlationId;
+}
+
+export function getUserId(): string | undefined {
+  return asyncLocalStorage.getStore()?.userId;
 }
 ```
 

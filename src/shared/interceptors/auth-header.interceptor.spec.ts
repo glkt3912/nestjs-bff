@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as requestContext from '../context/request-context';
 import { AuthHeaderInterceptor } from './auth-header.interceptor';
 
 describe('AuthHeaderInterceptor', () => {
@@ -191,6 +192,31 @@ describe('AuthHeaderInterceptor', () => {
 
       expect(result.headers['X-API-Key']).toBeUndefined();
       expect(result.headers['Authorization']).toBeUndefined();
+    });
+  });
+
+  describe('X-User-Id ヘッダ転送', () => {
+    beforeEach(() => {
+      configService.get.mockReturnValue('none');
+      interceptor.onModuleInit();
+    });
+
+    it('getUserId が値を返すとき X-User-Id ヘッダがセットされる', () => {
+      jest.spyOn(requestContext, 'getUserId').mockReturnValue('user-123');
+
+      const config = { headers: {} as Record<string, string> };
+      const result = requestInterceptors[0](config) as typeof config;
+
+      expect(result.headers['X-User-Id']).toBe('user-123');
+    });
+
+    it('getUserId が undefined のとき X-User-Id ヘッダはセットされない', () => {
+      jest.spyOn(requestContext, 'getUserId').mockReturnValue(undefined);
+
+      const config = { headers: {} as Record<string, string> };
+      const result = requestInterceptors[0](config) as typeof config;
+
+      expect(result.headers['X-User-Id']).toBeUndefined();
     });
   });
 });

@@ -125,7 +125,7 @@ Coverage is enforced at 70% statements globally. `src/generated/`, `src/users/`,
 
 The `docs` MCP server is enabled for this project. Use it to search design documents without reading raw files:
 
-- Search by keyword across all 15 docs
+- Search by keyword across all docs
 - Retrieve specific document content by path
 - Prefer MCP over reading `docs/*.md` files directly to save context
 
@@ -136,20 +136,3 @@ Skip these unless explicitly needed — they are large and auto-generated or tri
 - `src/generated/**` — auto-generated TypeScript client (thousands of lines)
 - `node_modules/**` — dependencies
 - `coverage/**` — test output
-
-## Reference Documents
-
-Key files under `docs/`:
-
-| File | Content |
-| ---- | ------- |
-| `architecture.md` | Layer structure, Axios integration, exception design |
-| `testing-strategy.md` | Test policy and mock pattern reference |
-| `development.md` | Step-by-step endpoint addition guide |
-| `setup.md` | Initial setup and environment variables |
-| `bff-design-philosophy.md` | Thin BFF design rationale |
-| `response-filtering.md` | Response DTOs and `@Expose()` usage |
-| `axios-interceptors.md` | Axios interceptor implementation details |
-| `express-middleware.md` | Middleware implementation details |
-| `arguments-host.md` | ArgumentsHost mock patterns |
-| `jwt-authentication.md` | JWT auth guard, `@Public()` decorator, configuration |
