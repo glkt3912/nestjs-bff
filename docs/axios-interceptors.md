@@ -118,18 +118,27 @@ onModuleInit() {
 
 ### LoggingInterceptor
 
-**役割：** 送受信をログ出力し、`x-request-id` ヘッダを伝播する。
+**役割：** 送受信をログ出力し、`x-request-id` ヘッダを伝播する。ファイルアップロード（`multipart/form-data`）のバイナリボディはログに含めない。
 
 ```typescript
 onModuleInit() {
   // リクエスト：アウトバウンドログ + correlationId をヘッダにセット
-  this.httpService.axiosRef.interceptors.request.use(async (config) => {
+  this.httpService.axiosRef.interceptors.request.use((config) => {
     const correlationId = getCorrelationId();
     if (correlationId) {
       config.headers['x-request-id'] = correlationId;
     }
+    // multipart/form-data のバイナリボディはログに出力しない
+    const contentType = config.headers['Content-Type']?.toString() ?? '';
+    const isMultipart = contentType.includes('multipart/form-data');
     this.logger.info(
-      { direction: 'outbound', method: config.method?.toUpperCase(), url: config.url, correlationId },
+      {
+        direction: 'outbound',
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        correlationId,
+        bodyLogged: !isMultipart,  // ファイルアップロード時は false
+      },
       `→ ${config.method?.toUpperCase()} ${config.url}`,
     );
     return config;
@@ -137,7 +146,7 @@ onModuleInit() {
 
   // レスポンス：インバウンドログ
   this.httpService.axiosRef.interceptors.response.use(
-    async (response) => {
+    (response) => {
       this.logger.info(
         { direction: 'inbound', status: response.status, url: response.config.url, correlationId: getCorrelationId() },
         `← ${response.status} ${response.config.url}`,
@@ -152,8 +161,23 @@ onModuleInit() {
 | 項目 | 詳細 |
 |------|------|
 | 対象 | request / response |
-| ログ形式 | `{ direction, method, url, status, correlationId }` |
+| ログ形式 | `{ direction, method, url, status, correlationId, bodyLogged }` |
 | ID 伝播 | `AsyncLocalStorage` から取得した ID を `x-request-id` ヘッダに設定 |
+| `bodyLogged` | JSON リクエストは `true`、`multipart/form-data` は `false`（バイナリはログ対象外） |
+
+#### なぜ `bodyLogged: false` を明示するのか
+
+バイナリボディをそのままログに出力すると、ログが破損したり数 MB の出力が発生したりします。
+「ログしない」を黙示的に行うのではなく、`bodyLogged: false` を明示することで
+「意図的に省略している」とログ上で区別できます。
+
+```json
+// JSON リクエスト
+{ "direction": "outbound", "method": "POST", "url": "/users", "bodyLogged": true }
+
+// ファイルアップロード
+{ "direction": "outbound", "method": "POST", "url": "/upload", "bodyLogged": false }
+```
 
 ---
 

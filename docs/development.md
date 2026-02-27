@@ -141,6 +141,120 @@ curl http://localhost:3000/health
 
 詳細は [docs/health-check.md](./health-check.md) を参照してください。
 
+## ファイルアップロードエンドポイントの追加
+
+通常の JSON エンドポイントと異なり、`multipart/form-data` を扱うには以下の追加手順が必要です。
+`src/users/` に参照実装があります。
+
+### 1. Module に MulterModule を追加
+
+`UPLOAD_MAX_FILE_SIZE` 環境変数でサイズ上限を設定します。
+
+```typescript
+// src/<feature>/<feature>.module.ts
+import { MulterModule } from '@nestjs/platform-express';
+
+@Module({
+  imports: [
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        limits: {
+          fileSize: config.get<number>('UPLOAD_MAX_FILE_SIZE', 10 * 1024 * 1024),
+        },
+      }),
+    }),
+  ],
+  controllers: [ExampleController],
+  providers: [ExampleService],
+})
+export class ExampleModule {}
+```
+
+### 2. Controller に FileInterceptor を追加
+
+```typescript
+import { Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+@Post('upload')
+@UseInterceptors(FileInterceptor('file'))  // フォームフィールド名を指定
+uploadFile(
+  @UploadedFile() file: Express.Multer.File,
+): Promise<{ filename: string; size: number }> {
+  return this.exampleService.uploadFile(file);
+}
+```
+
+`FileInterceptor('file')` が `multipart/form-data` からファイルを取り出し、メモリ（`file.buffer`）に格納します。
+Module の MulterModule 設定が適用されるため、Controller 側にサイズ上限を再指定する必要はありません。
+
+### 3. Service でバックエンドへ転送
+
+```typescript
+import { HttpService } from '@nestjs/axios';
+
+async uploadFile(
+  file: Express.Multer.File,
+): Promise<{ filename: string; size: number }> {
+  // FormData に詰め替えてバックエンドへ転送
+  const form = new FormData();
+  form.append(
+    'file',
+    new Blob([new Uint8Array(file.buffer)], { type: file.mimetype }),
+    file.originalname,
+  );
+  // axios が Content-Type: multipart/form-data; boundary=... を自動付与する
+  const { data } = await this.httpService.axiosRef.post<{
+    filename: string;
+    size: number;
+  }>('/upload', form);
+  return data;
+}
+```
+
+**ポイント：`Content-Type` の boundary について**
+
+`multipart/form-data` の `Content-Type` には `boundary`（各パーツの区切り文字）が含まれます。
+
+```
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxk
+```
+
+ネイティブの `FormData` を axios に渡すと、axios が boundary を自動で生成して `Content-Type` に設定します。
+手動で `Content-Type` を上書きすると boundary が失われてバックエンドがパースできなくなるため、設定しないのが正しい実装です。
+
+### フロー図
+
+```
+フロント
+  │  POST /api/<feature>/upload
+  │  Content-Type: multipart/form-data; boundary=xxx
+  │  (バイナリデータ)
+  ▼
+BFF
+  │  FileInterceptor がファイルをメモリ（buffer）に取り出す
+  │  → Controller → Service
+  │  → FormData を再構築
+  │  → LoggingInterceptor: bodyLogged: false でログ記録
+  ▼
+バックエンド
+     POST /upload
+     Content-Type: multipart/form-data; boundary=yyy（axios が自動付与）
+     (バイナリデータ)
+```
+
+### 注意事項
+
+| 項目 | 説明 |
+|------|------|
+| メモリ使用量 | `FileInterceptor` はデフォルトでファイルをメモリに展開する。大容量ファイルは `diskStorage` の使用を検討する |
+| `Buffer` → `Uint8Array` | `new Blob([file.buffer])` は TypeScript の型エラーになる。`new Uint8Array(file.buffer)` を使う |
+| 環境変数 `UPLOAD_MAX_FILE_SIZE` | バイト単位。デフォルト 10 MB（= 10 × 1024 × 1024） |
+
+---
+
 ## ファイル構造の規約
 
 ```text
