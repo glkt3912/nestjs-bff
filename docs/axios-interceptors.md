@@ -128,16 +128,15 @@ onModuleInit() {
     if (correlationId) {
       config.headers['x-request-id'] = correlationId;
     }
-    // multipart/form-data のバイナリボディはログに出力しない
-    const contentType = config.headers['Content-Type']?.toString() ?? '';
-    const isMultipart = contentType.includes('multipart/form-data');
+    // config.data で判定する（インターセプター実行時点では Content-Type ヘッダーが未設定のため）
+    const isMultipart = config.data instanceof FormData;
     this.logger.info(
       {
         direction: 'outbound',
         method: config.method?.toUpperCase(),
         url: config.url,
         correlationId,
-        bodyLogged: !isMultipart,  // ファイルアップロード時は false
+        bodyLogged: !isMultipart,  // FormData（ファイルアップロード）のとき false
       },
       `→ ${config.method?.toUpperCase()} ${config.url}`,
     );

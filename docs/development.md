@@ -202,7 +202,7 @@ async uploadFile(
   const form = new FormData();
   form.append(
     'file',
-    new Blob([new Uint8Array(file.buffer)], { type: file.mimetype }),
+    new Blob([file.buffer as unknown as ArrayBuffer], { type: file.mimetype }),
     file.originalname,
   );
   // axios が Content-Type: multipart/form-data; boundary=... を自動付与する
@@ -250,7 +250,8 @@ BFF
 | 項目 | 説明 |
 |------|------|
 | メモリ使用量 | `FileInterceptor` はデフォルトでファイルをメモリに展開する。大容量ファイルは `diskStorage` の使用を検討する |
-| `Buffer` → `Uint8Array` | `new Blob([file.buffer])` は TypeScript の型エラーになる。`new Uint8Array(file.buffer)` を使う |
+| `Buffer` の型エラー | `new Blob([file.buffer])` は TypeScript の型エラーになる。`file.buffer as unknown as ArrayBuffer` でキャストするとコピーなしで回避できる |
+| ファイル必須バリデーション | `@UploadedFile(new ParseFilePipe({ fileIsRequired: true }))` を付けないとファイルなしリクエストで `undefined` がサービスに渡りクラッシュする |
 | 環境変数 `UPLOAD_MAX_FILE_SIZE` | バイト単位。デフォルト 10 MB（= 10 × 1024 × 1024） |
 
 ---
