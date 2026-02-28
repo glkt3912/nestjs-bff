@@ -61,6 +61,7 @@ Copy `.env` and adjust as needed. Key variables:
 | `UPLOAD_MAX_FILE_SIZE` | `10485760` | Max file size for multipart uploads in bytes (default 10 MB) |
 | `CACHE_TTL` | `30` | Cache TTL in seconds. `0` falls back to 1ms (Keyv treats 0 as no-expiry) |
 | `CACHE_STORE` | `memory` | `memory` / `redis` |
+| `CACHE_MAX_ITEMS` | `500` | Max in-memory cache entries. Oldest entries evicted when exceeded (LRU) |
 | `REDIS_HOST` | `` | Required when `CACHE_STORE=redis` |
 | `REDIS_PORT` | `6379` | Redis port |
 | `REDIS_PASSWORD` | `` | Redis auth password |
