@@ -59,7 +59,7 @@ Copy `.env` and adjust as needed. Key variables:
 | `JWT_AUTH_ENABLED` | `false` | Set `true` to enable JWT verification on client→BFF requests |
 | `JWT_SECRET` | `` | Secret key for JWT signature verification (required when `JWT_AUTH_ENABLED=true`) |
 | `UPLOAD_MAX_FILE_SIZE` | `10485760` | Max file size for multipart uploads in bytes (default 10 MB) |
-| `CACHE_TTL` | `30` | Cache TTL in seconds. Set `0` to disable |
+| `CACHE_TTL` | `30` | Cache TTL in seconds. `0` falls back to 1ms (Keyv treats 0 as no-expiry) |
 | `CACHE_STORE` | `memory` | `memory` / `redis` |
 | `REDIS_HOST` | `` | Required when `CACHE_STORE=redis` |
 | `REDIS_PORT` | `6379` | Redis port |
