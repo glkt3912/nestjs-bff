@@ -172,5 +172,25 @@
       "topics": ["createApiProvider", "DI", "Symbol", "BaseURL", "HttpService", "axiosRef", "マイクロサービス", "複数バックエンド", "環境変数"],
       "updatedAt": "2026-02-28"
     }
+    ,{
+      "id": "cache-manager",
+      "path": "docs/cache-manager.md",
+      "title": "レスポンスキャッシュ（@nestjs/cache-manager）",
+      "description": "@nestjs/cache-manager による GET エンドポイントのレスポンスキャッシュ。CacheInterceptor の動作フロー・登録順序の根拠、@CacheTTL デコレータの使い方、インメモリ/Redis の切り替え方法、JWT 認証付きエンドポイントの注意点",
+      "tags": ["キャッシュ", "パフォーマンス", "インターセプター", "Redis"],
+      "industry": ["IT"],
+      "topics": ["CacheModule", "CacheInterceptor", "CacheTTL", "CACHE_STORE", "CACHE_TTL", "Keyv", "Redis", "APP_INTERCEPTOR", "インメモリ", "TTL"],
+      "updatedAt": "2026-02-28"
+    }
+    ,{
+      "id": "keyv-kvs",
+      "path": "docs/keyv-kvs.md",
+      "title": "Keyv とキーバリューストア（KVS）",
+      "description": "KVS（Key-Value Store）の基本概念と用途、Keyv ライブラリのアダプターパターン設計、cache-manager v5→v7 移行で Keyv ベースになった背景、@keyv/redis の使い方と接続 URL フォーマット、deprecated になった cache-manager-redis-yet との対比",
+      "tags": ["キャッシュ", "Redis", "KVS", "アーキテクチャ"],
+      "industry": ["IT"],
+      "topics": ["Keyv", "KVS", "キーバリューストア", "cache-manager", "keyv-redis", "cache-manager-redis-yet", "アダプターパターン", "TTL", "Redis", "インメモリ"],
+      "updatedAt": "2026-02-28"
+    }
   ]
 }

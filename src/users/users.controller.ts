@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { CacheTTL } from '@nestjs/cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserRequest } from './dto/create-user.request';
@@ -22,11 +23,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @CacheTTL(30_000)
   findAll(): Promise<UserResponse[]> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
+  @CacheTTL(30_000)
   findOne(@Param('id') id: number): Promise<UserResponse> {
     return this.usersService.findOne(id);
   }
