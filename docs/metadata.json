@@ -126,10 +126,10 @@
       "id": "axios-interceptors",
       "path": "docs/axios-interceptors.md",
       "title": "Axios インターセプター",
-      "description": "Axios インターセプターの仕組み・動作フロー、AuthHeaderInterceptor/LoggingInterceptor/MockInterceptor の役割と実装詳細、NestJS NestInterceptor との使い分け、multipart/form-data のバイナリボディスキップ、テスト方法",
-      "tags": ["Axios", "インターセプター", "アーキテクチャ", "BFF"],
+      "description": "Axios インターセプターの仕組み・動作フロー、axiosRef とは何か・なぜ1つだけ存在するのか（NestJS シングルトン DI）、RxJS Observable と Promise の違い、HttpService ラッパーの構造、AuthHeaderInterceptor/LoggingInterceptor/MockInterceptor の役割と実装詳細、NestJS NestInterceptor との使い分け、multipart/form-data のバイナリボディスキップ、テスト方法",
+      "tags": ["Axios", "インターセプター", "アーキテクチャ", "BFF", "RxJS"],
       "industry": ["IT"],
-      "topics": ["AxiosInterceptor", "OnModuleInit", "HttpService", "AuthHeader", "Logging", "MockMode", "横断的関心事", "bodyLogged", "multipart"],
+      "topics": ["AxiosInterceptor", "OnModuleInit", "HttpService", "axiosRef", "Observable", "RxJS", "シングルトン", "AuthHeader", "Logging", "MockMode", "横断的関心事", "bodyLogged", "multipart"],
       "updatedAt": "2026-02-28"
     }
     ,{
