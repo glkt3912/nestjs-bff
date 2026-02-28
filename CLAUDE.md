@@ -59,6 +59,12 @@ Copy `.env` and adjust as needed. Key variables:
 | `JWT_AUTH_ENABLED` | `false` | Set `true` to enable JWT verification on client→BFF requests |
 | `JWT_SECRET` | `` | Secret key for JWT signature verification (required when `JWT_AUTH_ENABLED=true`) |
 | `UPLOAD_MAX_FILE_SIZE` | `10485760` | Max file size for multipart uploads in bytes (default 10 MB) |
+| `CACHE_TTL` | `30` | Cache TTL in seconds. Set `0` to disable |
+| `CACHE_STORE` | `memory` | `memory` / `redis` |
+| `REDIS_HOST` | `` | Required when `CACHE_STORE=redis` |
+| `REDIS_PORT` | `6379` | Redis port |
+| `REDIS_PASSWORD` | `` | Redis auth password |
+| `REDIS_DB` | `0` | Redis database number |
 
 **Tip:** Set `MOCK_MODE=true` to develop and test without a running backend.
 
@@ -77,7 +83,7 @@ Key directories:
 - `src/shared/` — Shared infrastructure layer (reusable across projects)
 - `src/generated/` — Auto-generated code (**do not read or edit manually**)
 - `src/users/` — Reference implementation for new modules (Thin BFF pattern example)
-- `docs/` — Design documents (15 files, searchable via MCP docs server)
+- `docs/` — Design documents (17 files, searchable via MCP docs server)
 
 **When adding a new module, refer to `src/users/` as the template.**
 
