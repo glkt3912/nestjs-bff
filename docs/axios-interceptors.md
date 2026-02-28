@@ -112,8 +112,8 @@ HttpService（NestJS ラッパー）
   └── .axiosRef → 素の Axios インスタンス   ← ここに interceptors を登録する
 ```
 
-> **このプロジェクトでは** Observable を使わず `httpService.axiosRef.get()` のように
-> 素の Axios インスタンスを直接呼び出しています。
+> **このプロジェクトでは** Observable を使わず、生成 API クライアント（`this.api.getUsers()` など）
+> または `httpService.axiosRef` を通じて素の Promise として呼び出しています。
 > Observable のオペレーターが不要な Thin BFF では、Promise の方がシンプルだからです。
 
 ### axiosRef が必要な理由

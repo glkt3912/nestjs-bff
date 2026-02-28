@@ -160,3 +160,12 @@ export const DefaultApiProvider = createApiProvider(
 5. サービスで `@Inject(token)` して利用
 
 既存モジュール・インターセプター・認証設定は一切変更不要です。
+
+---
+
+## 制約と注意点
+
+| 制約 | 詳細 |
+|------|------|
+| 認証ヘッダは全バックエンドで共通 | `AuthHeaderInterceptor` は単一 `axiosRef` に登録されるため、`X-API-Key` / `Bearer Token` / `X-User-Id` がすべてのバックエンドへのリクエストに付与される。バックエンドごとに異なる認証方式が必要な場合は、Axios インスタンスを複数用意する設計が必要になる |
+| タイムアウトは全バックエンドで共通 | `HTTP_TIMEOUT` は単一の Axios インスタンスに設定されるため、バックエンドごとに異なる値を設定できない |
