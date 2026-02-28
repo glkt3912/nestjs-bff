@@ -45,7 +45,7 @@ Copy `.env` and adjust as needed. Key variables:
 
 | Variable | Default | Notes |
 | -------- | ------- | ----- |
-| `BACKEND_API_BASE_URL` | `http://localhost:8080` | Backend base URL |
+| `BACKEND_API_BASE_URL` | `http://localhost:8080` | Default backend base URL. For multi-backend, add per-service env vars (see `createApiProvider`) |
 | `BACKEND_SWAGGER_URL` | `http://localhost:8080/swagger.json` | Used by `gen:all` |
 | `MOCK_MODE` | `false` | Set `true` to run without a backend (returns fixtures) |
 | `PORT` | `3000` | BFF server port |
