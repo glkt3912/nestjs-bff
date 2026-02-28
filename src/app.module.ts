@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
+import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
+import Keyv from 'keyv';
+import KeyvRedis from '@keyv/redis';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -52,6 +55,30 @@ import { UsersModule } from './users/users.module';
         },
       ],
     }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const ttlMs = config.get<number>('CACHE_TTL', 30) * 1000;
+        if (config.get<string>('CACHE_STORE') === 'redis') {
+          const host = config.getOrThrow<string>('REDIS_HOST');
+          const port = config.get<number>('REDIS_PORT', 6379);
+          const password = config.get<string>('REDIS_PASSWORD');
+          const db = config.get<number>('REDIS_DB', 0);
+          const url = password
+            ? `redis://:${password}@${host}:${port}/${db}`
+            : `redis://${host}:${port}/${db}`;
+          return {
+            stores: [new Keyv({ store: new KeyvRedis(url), ttl: ttlMs })],
+          };
+        }
+        // in-memory: Keyv のデフォルトストア（Map）を使用
+        return {
+          stores: [new Keyv({ ttl: ttlMs })],
+        };
+      },
+    }),
     SharedModule,
     HealthModule,
     UsersModule,
@@ -60,6 +87,7 @@ import { UsersModule } from './users/users.module';
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
     { provide: APP_INTERCEPTOR, useClass: UserContextInterceptor },
     { provide: APP_FILTER, useClass: AxiosExceptionFilter },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
