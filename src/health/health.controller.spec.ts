@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckService, HttpHealthIndicator } from '@nestjs/terminus';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HealthController } from './health.controller';
 
 describe('HealthController', () => {
@@ -25,6 +26,7 @@ describe('HealthController', () => {
 
     configService = {
       getOrThrow: jest.fn().mockReturnValue('http://localhost:8080'),
+      get: jest.fn().mockReturnValue(undefined),
     } as unknown as jest.Mocked<ConfigService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -33,6 +35,10 @@ describe('HealthController', () => {
         { provide: HealthCheckService, useValue: healthCheckService },
         { provide: HttpHealthIndicator, useValue: httpHealthIndicator },
         { provide: ConfigService, useValue: configService },
+        {
+          provide: CACHE_MANAGER,
+          useValue: { set: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
