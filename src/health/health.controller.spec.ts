@@ -104,4 +104,62 @@ describe('HealthController', () => {
     expect(result).toMatchObject({ status: 'error' });
     expect(result.error).toHaveProperty('backend');
   });
+
+  it('CACHE_STORE が redis 以外の場合は checks が 1 件のみ（Redis チェックなし）', async () => {
+    await controller.check();
+
+    const [indicators] = healthCheckService.check.mock.calls[0];
+    expect(indicators).toHaveLength(1);
+  });
+
+  describe('CACHE_STORE=redis', () => {
+    let redisController: HealthController;
+    let cacheMock: { set: jest.Mock };
+
+    beforeEach(async () => {
+      cacheMock = { set: jest.fn().mockResolvedValue(undefined) };
+
+      const redisConfig = {
+        getOrThrow: jest.fn().mockReturnValue('http://localhost:8080'),
+        get: jest.fn().mockReturnValue('redis'),
+      } as unknown as jest.Mocked<ConfigService>;
+
+      const module = await Test.createTestingModule({
+        controllers: [HealthController],
+        providers: [
+          { provide: HealthCheckService, useValue: healthCheckService },
+          { provide: HttpHealthIndicator, useValue: httpHealthIndicator },
+          { provide: ConfigService, useValue: redisConfig },
+          { provide: CACHE_MANAGER, useValue: cacheMock },
+        ],
+      }).compile();
+
+      redisController = module.get<HealthController>(HealthController);
+    });
+
+    it('checks に Redis インジケーターが追加され 2 件になる', async () => {
+      await redisController.check();
+
+      const [indicators] = healthCheckService.check.mock.calls[0];
+      expect(indicators).toHaveLength(2);
+    });
+
+    it('Redis ping 成功時は { redis: { status: up } } を返す', async () => {
+      await redisController.check();
+
+      const [indicators] = healthCheckService.check.mock.calls[0];
+      const result = await indicators[1]();
+
+      expect(result).toEqual({ redis: { status: 'up' } });
+    });
+
+    it('Redis ping 失敗時は Error をスローする', async () => {
+      cacheMock.set.mockRejectedValue(new Error('Connection refused'));
+      await redisController.check();
+
+      const [indicators] = healthCheckService.check.mock.calls[0];
+
+      await expect(indicators[1]()).rejects.toThrow('Redis ping failed');
+    });
+  });
 });
