@@ -26,7 +26,7 @@ describe('HealthController', () => {
 
     configService = {
       getOrThrow: jest.fn().mockReturnValue('http://localhost:8080'),
-      get: jest.fn().mockReturnValue(undefined),
+      get: jest.fn().mockReturnValue(undefined), // CACHE_STORE は未設定（memory）
     } as unknown as jest.Mocked<ConfigService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -70,12 +70,25 @@ describe('HealthController', () => {
     );
   });
 
-  it('BACKEND_API_BASE_URL 未設定時はエラーをスローする', () => {
-    configService.getOrThrow.mockImplementation(() => {
-      throw new Error('Config key "BACKEND_API_BASE_URL" is not defined');
-    });
+  it('BACKEND_API_BASE_URL 未設定時はモジュール初期化時にエラーをスローする', async () => {
+    const failingConfig = {
+      getOrThrow: jest.fn().mockImplementation(() => {
+        throw new Error('Config key "BACKEND_API_BASE_URL" is not defined');
+      }),
+      get: jest.fn().mockReturnValue(undefined),
+    } as unknown as jest.Mocked<ConfigService>;
 
-    expect(() => controller.check()).toThrow();
+    await expect(
+      Test.createTestingModule({
+        controllers: [HealthController],
+        providers: [
+          { provide: HealthCheckService, useValue: healthCheckService },
+          { provide: HttpHealthIndicator, useValue: httpHealthIndicator },
+          { provide: ConfigService, useValue: failingConfig },
+          { provide: CACHE_MANAGER, useValue: { set: jest.fn() } },
+        ],
+      }).compile(),
+    ).rejects.toThrow('Config key "BACKEND_API_BASE_URL" is not defined');
   });
 
   it('バックエンド障害時は HealthCheckService がエラーレスポンスを返す', async () => {

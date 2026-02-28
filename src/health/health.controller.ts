@@ -12,24 +12,27 @@ import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('health')
 export class HealthController {
+  private readonly backendUrl: string;
+  private readonly isRedis: boolean;
+
   constructor(
     private health: HealthCheckService,
     private http: HttpHealthIndicator,
-    private configService: ConfigService,
+    configService: ConfigService,
     @Inject(CACHE_MANAGER) private cache: Cache,
-  ) {}
+  ) {
+    this.backendUrl = configService.getOrThrow<string>('BACKEND_API_BASE_URL');
+    this.isRedis = configService.get<string>('CACHE_STORE') === 'redis';
+  }
 
   @Get()
   @HealthCheck()
   @Public()
   check() {
-    const backendUrl = this.configService.getOrThrow<string>(
-      'BACKEND_API_BASE_URL',
-    );
     const checks: (() => Promise<HealthIndicatorResult>)[] = [
-      () => this.http.pingCheck('backend', backendUrl),
+      () => this.http.pingCheck('backend', this.backendUrl),
     ];
-    if (this.configService.get<string>('CACHE_STORE') === 'redis') {
+    if (this.isRedis) {
       checks.push(() =>
         this.cache
           .set('__health__', 1, 1)
