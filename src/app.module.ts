@@ -6,6 +6,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
 import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
+import { LRUCache } from 'lru-cache';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -76,9 +77,12 @@ import { UsersModule } from './users/users.module';
             stores: [new Keyv({ store: new KeyvRedis(url), ttl: ttlMs })],
           };
         }
-        // in-memory: Keyv のデフォルトストア（Map）を使用
+        // in-memory: LRU でエントリ数上限を設けて OOM を防ぐ
+        const maxItems = Number(config.get('CACHE_MAX_ITEMS', 500));
         return {
-          stores: [new Keyv({ ttl: ttlMs })],
+          stores: [
+            new Keyv({ store: new LRUCache({ max: maxItems }), ttl: ttlMs }),
+          ],
         };
       },
     }),
