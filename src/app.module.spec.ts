@@ -54,6 +54,97 @@ describe('ThrottlerGuard', () => {
   });
 });
 
+describe('CacheModule useFactory', () => {
+  // ThrottlerModule と同パターン: ファクトリのロジック部分を抽出して検証
+  const buildCacheConfig = (config: ConfigService) => {
+    const rawTtl = Number(config.get('CACHE_TTL', 30));
+    const ttlMs = rawTtl > 0 ? rawTtl * 1000 : 1;
+    if (config.get<string>('CACHE_STORE') === 'redis') {
+      const host = config.getOrThrow<string>('REDIS_HOST');
+      const port = Number(config.get('REDIS_PORT', 6379));
+      const password = config.get<string>('REDIS_PASSWORD');
+      const db = Number(config.get('REDIS_DB', 0));
+      const url = password
+        ? `redis://:${password}@${host}:${port}/${db}`
+        : `redis://${host}:${port}/${db}`;
+      return { ttlMs, url };
+    }
+    const maxItems = Number(config.get('CACHE_MAX_ITEMS', 500));
+    return { ttlMs, maxItems };
+  };
+
+  const mockConfig = (overrides: Record<string, unknown>) =>
+    ({
+      get: jest.fn().mockImplementation((key: string, def: unknown) =>
+        key in overrides ? overrides[key] : def,
+      ),
+      getOrThrow: jest.fn().mockImplementation((key: string) => {
+        if (key in overrides) return overrides[key];
+        throw new Error(`Missing required config: ${key}`);
+      }),
+    }) as unknown as ConfigService;
+
+  describe('TTL 計算', () => {
+    it('CACHE_TTL > 0 のとき秒 × 1000 ms に変換する', () => {
+      const { ttlMs } = buildCacheConfig(mockConfig({ CACHE_TTL: 30 })) as {
+        ttlMs: number;
+      };
+      expect(ttlMs).toBe(30_000);
+    });
+
+    it('CACHE_TTL = 0 のとき 1ms にフォールバックする（Keyv は 0 = 永久保存のため）', () => {
+      const { ttlMs } = buildCacheConfig(mockConfig({ CACHE_TTL: 0 })) as {
+        ttlMs: number;
+      };
+      expect(ttlMs).toBe(1);
+    });
+  });
+
+  describe('Redis ストア', () => {
+    it('パスワードなしのとき redis://host:port/db 形式の URL を生成する', () => {
+      const result = buildCacheConfig(
+        mockConfig({
+          CACHE_STORE: 'redis',
+          REDIS_HOST: 'localhost',
+          REDIS_PORT: 6379,
+          REDIS_DB: 0,
+        }),
+      ) as { ttlMs: number; url: string };
+      expect(result.url).toBe('redis://localhost:6379/0');
+    });
+
+    it('パスワードありのとき redis://:pass@host:port/db 形式の URL を生成する', () => {
+      const result = buildCacheConfig(
+        mockConfig({
+          CACHE_STORE: 'redis',
+          REDIS_HOST: 'redis.example.com',
+          REDIS_PORT: 6380,
+          REDIS_PASSWORD: 'secret',
+          REDIS_DB: 1,
+        }),
+      ) as { ttlMs: number; url: string };
+      expect(result.url).toBe('redis://:secret@redis.example.com:6380/1');
+    });
+  });
+
+  describe('インメモリ LRU ストア', () => {
+    it('CACHE_MAX_ITEMS を指定した場合はその値を maxItems に使用する', () => {
+      const result = buildCacheConfig(
+        mockConfig({ CACHE_MAX_ITEMS: 200 }),
+      ) as { ttlMs: number; maxItems: number };
+      expect(result.maxItems).toBe(200);
+    });
+
+    it('CACHE_MAX_ITEMS 未指定のときデフォルト 500 を使用する', () => {
+      const result = buildCacheConfig(mockConfig({})) as {
+        ttlMs: number;
+        maxItems: number;
+      };
+      expect(result.maxItems).toBe(500);
+    });
+  });
+});
+
 describe('ThrottlerModule useFactory', () => {
   const throttlerFactory = (configService: ConfigService) => [
     {
