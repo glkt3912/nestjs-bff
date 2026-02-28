@@ -23,13 +23,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @CacheTTL(30_000)
+  @CacheTTL(30_000) // 30 seconds (unit: ms)
   findAll(): Promise<UserResponse[]> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @CacheTTL(30_000)
+  @CacheTTL(30_000) // 30 seconds (unit: ms)
   findOne(@Param('id') id: number): Promise<UserResponse> {
     return this.usersService.findOne(id);
   }
