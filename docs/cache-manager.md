@@ -46,7 +46,7 @@
 
 | 変数 | デフォルト | 説明 |
 |------|-----------|------|
-| `CACHE_TTL` | `30` | キャッシュ有効期間（秒）。`0` で無効化 |
+| `CACHE_TTL` | `30` | キャッシュ有効期間（秒）。`0` は 1ms にフォールバック（Keyv は 0 = 永久保存のため） |
 | `CACHE_STORE` | `memory` | `memory` / `redis` |
 | `REDIS_HOST` | `` | `CACHE_STORE=redis` のとき必須 |
 | `REDIS_PORT` | `6379` | Redis ポート |
@@ -59,7 +59,7 @@
 providers: [
   { provide: APP_GUARD,       useClass: ThrottlerGuard },
   { provide: APP_GUARD,       useClass: JwtAuthGuard },
-  { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },       // ← 先頭
+  { provide: APP_INTERCEPTOR, useClass: UserAwareCacheInterceptor }, // ← 先頭
   { provide: APP_INTERCEPTOR, useClass: UserContextInterceptor },
   { provide: APP_FILTER,      useClass: AxiosExceptionFilter },
   { provide: APP_FILTER,      useClass: HttpExceptionFilter },
@@ -79,13 +79,13 @@ APP_INTERCEPTOR は登録順に実行されるため、CacheInterceptor を先�
 import { CacheTTL } from '@nestjs/cache-manager';
 
 @Get()
-@CacheTTL(30)           // 30 秒キャッシュ
+@CacheTTL(30_000)       // 30 秒（cache-manager v7 は ms 単位）
 findAll(): Promise<UserResponse[]> {
   return this.usersService.findAll();
 }
 
 @Get(':id')
-@CacheTTL(60)           // ID ごとに 60 秒キャッシュ
+@CacheTTL(60_000)       // 60 秒（cache-manager v7 は ms 単位）
 findOne(@Param('id') id: number): Promise<UserResponse> {
   return this.usersService.findOne(id);
 }
@@ -135,4 +135,8 @@ REDIS_PORT=6379
 | **キャッシュ無効化が自動でない** | Thin BFF のためバックエンドのデータ更新を BFF が検知できない。短い TTL（30 秒程度）での運用が推奨 |
 | **スケールアウト時** | インメモリストアはインスタンスごとに独立。複数インスタンス構成では必ず `CACHE_STORE=redis` を使用する |
 | **POST / PUT / DELETE** | CacheInterceptor は GET のみキャッシュ。変更系リクエストは対象外 |
-| **JWT 認証付きエンドポイント** | ユーザーごとに異なるレスポンスを返す場合、デフォルトの URL キーではユーザー間でキャッシュが共有されてしまう。個人データは TTL を極力短く設定するか、キャッシュを無効化すること |
+| **JWT 認証付きエンドポイント** | `UserAwareCacheInterceptor` が `userId:url` をキーとして使用するためユーザー間は分離済み。`@Public()` エンドポイントは `user.sub` がないためキャッシュ対象外（未認証リクエストは安全のためスキップ） |
+| **@CacheTTL の単位は ms** | `@CacheTTL(n)` の `n` はミリ秒。`CACHE_TTL` 環境変数（秒）と単位が異なる点に注意。30秒は `@CacheTTL(30_000)` と書く |
+| **インメモリ時のサイズ上限** | `CACHE_MAX_ITEMS`（デフォルト 500）でエントリ数を制限。上限超過時は LRU で古いエントリを自動削除 |
+| **エラーレスポンスはキャッシュされない** | バックエンドが 5xx を返した場合、`AxiosExceptionFilter` が例外に変換するため `UserAwareCacheInterceptor` はキャッシュしない |
+| **キャッシュスタンピード** | 人気キーの TTL 切れ時に大量ミスが発生しうる。TTL を長めに設定するか Redis の `PEXPIRE` + Lock パターンで対応（本実装の範囲外） |
