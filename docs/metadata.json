@@ -126,10 +126,10 @@
       "id": "axios-interceptors",
       "path": "docs/axios-interceptors.md",
       "title": "Axios インターセプター",
-      "description": "Axios インターセプターの仕組み・動作フロー、AuthHeaderInterceptor/LoggingInterceptor/MockInterceptor の役割と実装詳細、NestJS NestInterceptor との使い分け、multipart/form-data のバイナリボディスキップ、テスト方法",
-      "tags": ["Axios", "インターセプター", "アーキテクチャ", "BFF"],
+      "description": "Axios インターセプターの仕組み・動作フロー、axiosRef とは何か・なぜ1つだけ存在するのか（NestJS シングルトン DI）、RxJS Observable と Promise の違い、HttpService ラッパーの構造、AuthHeaderInterceptor/LoggingInterceptor/MockInterceptor の役割と実装詳細、NestJS NestInterceptor との使い分け、multipart/form-data のバイナリボディスキップ、テスト方法",
+      "tags": ["Axios", "インターセプター", "アーキテクチャ", "BFF", "RxJS"],
       "industry": ["IT"],
-      "topics": ["AxiosInterceptor", "OnModuleInit", "HttpService", "AuthHeader", "Logging", "MockMode", "横断的関心事", "bodyLogged", "multipart"],
+      "topics": ["AxiosInterceptor", "OnModuleInit", "HttpService", "axiosRef", "Observable", "RxJS", "シングルトン", "AuthHeader", "Logging", "MockMode", "横断的関心事", "bodyLogged", "multipart"],
       "updatedAt": "2026-02-28"
     }
     ,{
@@ -160,6 +160,16 @@
       "tags": ["NestJS", "アーキテクチャ", "Guard", "Interceptor", "ミドルウェア"],
       "industry": ["IT"],
       "topics": ["Guard", "Interceptor", "Middleware", "canActivate", "NestInterceptor", "ExecutionContext", "APP_GUARD", "APP_INTERCEPTOR", "実行順序", "認証", "認可"],
+      "updatedAt": "2026-02-28"
+    }
+    ,{
+      "id": "multi-backend",
+      "path": "docs/multi-backend.md",
+      "title": "複数バックエンドへの動的ルーティング",
+      "description": "マイクロサービス構成で複数バックエンドへルーティングする方法。createApiProvider ファクトリによる DI トークン管理、単一 axiosRef 共有でインターセプターを全バックエンドに適用する仕組み、バックエンド追加手順",
+      "tags": ["アーキテクチャ", "マイクロサービス", "ルーティング", "DI"],
+      "industry": ["IT"],
+      "topics": ["createApiProvider", "DI", "Symbol", "BaseURL", "HttpService", "axiosRef", "マイクロサービス", "複数バックエンド", "環境変数"],
       "updatedAt": "2026-02-28"
     }
   ]

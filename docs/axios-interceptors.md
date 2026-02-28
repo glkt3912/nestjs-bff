@@ -65,6 +65,108 @@ export class MyInterceptor implements OnModuleInit {
 
 ---
 
+## `HttpService.axiosRef` とは
+
+### Axios インスタンスとは
+
+Axios は Node.js・ブラウザで使われる HTTP クライアントライブラリです。
+`axios.create()` を呼ぶと **Axios インスタンス** が生成されます。
+
+```typescript
+const axiosInstance = axios.create({ baseURL: 'http://example.com', timeout: 5000 });
+// axiosInstance.get('/users')          — HTTP リクエスト
+// axiosInstance.interceptors.request.use(fn) — インターセプター登録
+```
+
+インスタンスは独立した設定（baseURL・timeout など）と
+インターセプターリストを持ちます。
+
+### RxJS Observable とは
+
+RxJS は非同期処理をストリームとして扱うライブラリで、`Observable` はその中心となる型です。
+Promise の「1 回だけ値を返す」に対して、Observable は **0 回以上の値を時系列で流せる** 抽象です。
+
+```typescript
+// Promise — 1 回だけ解決する
+const res: Promise<AxiosResponse> = axios.get('/users');
+
+// Observable — subscribe するまで実行されない（遅延評価）
+const res$: Observable<AxiosResponse> = httpService.get('/users');
+res$.subscribe(res => console.log(res.data)); // ここで初めてリクエストが走る
+```
+
+HTTP のように「1 回リクエストして 1 回レスポンスが返る」用途では
+Observable は Promise と実質同等ですが、RxJS の `pipe` / `map` / `catchError` などの
+オペレーターで処理を合成できる利点があります。
+
+### NestJS の HttpService とは
+
+NestJS は Axios を薄くラップした `HttpService` を提供します。
+`HttpService` のメソッドは Axios の戻り値（Promise）を RxJS の `Observable` に変換しており、
+`@nestjs/axios` のエコシステムと相性よく使えます。
+
+```
+HttpService（NestJS ラッパー）
+  ├── .get()  → Observable<AxiosResponse>   （RxJS）
+  ├── .post() → Observable<AxiosResponse>   （RxJS）
+  └── .axiosRef → 素の Axios インスタンス   ← ここに interceptors を登録する
+```
+
+> **このプロジェクトでは** Observable を使わず、生成 API クライアント（`this.api.getUsers()` など）
+> または `httpService.axiosRef` を通じて素の Promise として呼び出しています。
+> Observable のオペレーターが不要な Thin BFF では、Promise の方がシンプルだからです。
+
+### axiosRef が必要な理由
+
+インターセプターの登録など、Axios 固有の API を直接使いたいとき
+`httpService.axiosRef` で素の Axios インスタンスを取得します。
+
+### なぜ 1 つしか存在しないのか
+
+NestJS の DI コンテナはデフォルトで **シングルトン** でインスタンスを管理します。
+
+```
+アプリ起動
+  └── HttpModule が HttpService を 1 回だけ生成
+        └── axiosRef = new Axios(...)（1 つだけ作られる）
+```
+
+どのクラスに `HttpService` を注入しても、DI コンテナは **同じインスタンス** を返します。
+
+```typescript
+// UsersService に注入される HttpService
+@Injectable()
+export class UsersService {
+  constructor(private readonly httpService: HttpService) {}
+}
+
+// LoggingInterceptor が参照する HttpService
+@Injectable()
+export class LoggingInterceptor {
+  constructor(private readonly httpService: HttpService) {}
+}
+// → 上の 2 つは同じ HttpService オブジェクト → axiosRef も同じ Axios インスタンス
+```
+
+`onModuleInit` でインターセプターを 1 度登録すれば、その Axios インスタンスを使う
+**すべてのリクエストに自動で適用**されます。
+
+### 複数バックエンドでも 1 つで十分な理由
+
+`createApiProvider()` で作成した各バックエンド向け API クライアントも、同じ `axiosRef` を受け取ります。
+
+```
+UsersModule   → DefaultApi   ─┐
+OrdersModule  → OrdersApi    ─┤── 同じ axiosRef ──→ インターセプター ──→ 各バックエンド
+ProductsModule→ ProductsApi  ─┘
+```
+
+バックエンドごとに URL を切り替えるのは API クラスのコンストラクタに渡す `basePath` の役割であり、
+Axios インスタンスを複数作る必要はありません。
+詳細は [複数バックエンドへの動的ルーティング](multi-backend.md) を参照してください。
+
+---
+
 ## このプロジェクトのインターセプター一覧
 
 ### AuthHeaderInterceptor
