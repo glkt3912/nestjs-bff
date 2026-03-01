@@ -28,7 +28,8 @@ NestJS BFF (port 3000)
     │  ・MockInterceptor       — 開発時フィクスチャ応答（MOCK_MODE=true のみ有効）
     │
     │  [ルート]
-    │  ・/api/health           — ヘルスチェック（HealthModule）
+    │  ・/api/health/live      — Liveness probe（常に 200 OK、バックエンド疎通不要）
+    │  ・/api/health           — Readiness probe（バックエンド ping を含む完全チェック）
     │  ・/api/*                — 各 API モジュール（UsersModule 等）
     │
     ▼

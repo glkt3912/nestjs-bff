@@ -7,22 +7,29 @@ import { UserAwareCacheInterceptor } from './user-aware-cache.interceptor';
 const createContext = (
   url: string,
   user?: { sub?: string },
+  handler: object = {},
+  cls: object = {},
 ): ExecutionContext =>
   ({
     switchToHttp: () => ({
       getRequest: () => ({ url, user }),
     }),
+    getHandler: () => handler,
+    getClass: () => cls,
   }) as unknown as ExecutionContext;
 
 describe('UserAwareCacheInterceptor', () => {
   let interceptor: UserAwareCacheInterceptor;
+  let reflector: { getAllAndOverride: jest.Mock };
 
   beforeEach(async () => {
+    reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) };
+
     const module = await Test.createTestingModule({
       providers: [
         UserAwareCacheInterceptor,
         { provide: CACHE_MANAGER, useValue: {} },
-        { provide: Reflector, useValue: {} },
+        { provide: Reflector, useValue: reflector },
       ],
     }).compile();
 
@@ -47,6 +54,28 @@ describe('UserAwareCacheInterceptor', () => {
     });
 
     it('user が存在しない場合は undefined を返す（キャッシュしない）', () => {
+      const context = createContext('/api/users');
+
+      const key = (interceptor as any).trackBy(context) as string | undefined;
+
+      expect(key).toBeUndefined();
+    });
+
+    it('@Public() エンドポイントは未認証でも super.trackBy が呼ばれる', () => {
+      reflector.getAllAndOverride.mockReturnValue(true);
+      const superTrackBy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(interceptor)), 'trackBy')
+        .mockReturnValue('/api/health');
+
+      const context = createContext('/api/health');
+      const key = (interceptor as any).trackBy(context) as string | undefined;
+
+      expect(key).toBe('/api/health');
+      superTrackBy.mockRestore();
+    });
+
+    it('未認証かつ非 @Public() は undefined を返す（キャッシュしない）', () => {
+      reflector.getAllAndOverride.mockReturnValue(false);
       const context = createContext('/api/users');
 
       const key = (interceptor as any).trackBy(context) as string | undefined;

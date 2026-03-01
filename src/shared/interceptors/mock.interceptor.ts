@@ -2,8 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 interface MockError {
   isMock: true;
@@ -13,11 +14,11 @@ interface MockError {
 
 @Injectable()
 export class MockInterceptor implements OnModuleInit {
-  private readonly logger = new Logger(MockInterceptor.name);
-
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    @InjectPinoLogger(MockInterceptor.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   onModuleInit() {
@@ -70,7 +71,7 @@ export class MockInterceptor implements OnModuleInit {
       },
     );
 
-    this.logger.log(
+    this.logger.info(
       'MockInterceptor: MOCK_MODE=true, fixture responses enabled',
     );
   }

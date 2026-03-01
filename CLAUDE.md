@@ -76,7 +76,7 @@ Request processing order:
 1. **Express middleware**: `correlationIdMiddleware`, `pino-http`
 2. **NestJS globals**: `ThrottlerGuard`, `JwtAuthGuard`, `ValidationPipe`, `AxiosExceptionFilter`
 3. **Axios interceptors**: `LoggingInterceptor`, `AuthHeaderInterceptor`, `MockInterceptor`
-4. **Routes**: `/api/health` (HealthModule), `/api/*` (API modules)
+4. **Routes**: `/api/health/live` (liveness), `/api/health` (readiness), `/api/*` (API modules)
 5. **Swagger UI**: `/api-docs` (with JWT Bearer auth schema)
 
 Key directories:
@@ -136,6 +136,34 @@ The `docs` MCP server is enabled for this project. Use it to search design docum
 - Search by keyword across all docs
 - Retrieve specific document content by path
 - Prefer MCP over reading `docs/*.md` files directly to save context
+
+## Known Gotchas
+
+### Keyv: `ttl=0` means permanent cache, NOT "no cache"
+
+Keyv's `set(key, value, ttl)` explicitly converts `ttl=0` to `undefined` (no expiry):
+
+```js
+// node_modules/keyv/dist/index.js
+if (data.ttl === 0) { data.ttl = void 0; }  // 0 → permanent
+const expires = typeof data.ttl === "number" ? Date.now() + data.ttl : void 0;
+```
+
+| Value | Behavior |
+| ----- | -------- |
+| `ttl = 0` | Permanent (no expiry) |
+| `ttl = 1` | Expires after 1ms (effectively no cache) |
+| `ttl = undefined` | Falls back to Keyv instance default TTL |
+
+**Consequences for this codebase:**
+
+- `CACHE_TTL=0` env var → `computeCacheStoreParams` converts to `1ms` to prevent permanent storage
+- `@CacheTTL(0)` on an endpoint → **wrong**: caches permanently. Use `@CacheTTL(1)` instead
+- These are different layers: `computeCacheStoreParams` sets the Keyv instance default; `@CacheTTL(n)` sets a per-request override passed directly to `cache.set()`
+
+**Rule:** Never use `@CacheTTL(0)`. To disable caching for a specific endpoint, use `@CacheTTL(1)`.
+
+---
 
 ## Files to Avoid Reading
 

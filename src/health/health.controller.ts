@@ -5,7 +5,7 @@ import {
   HealthIndicatorResult,
   HttpHealthIndicator,
 } from '@nestjs/terminus';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, CacheTTL } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Public } from '../auth/decorators/public.decorator';
@@ -23,6 +23,13 @@ export class HealthController {
   ) {
     this.backendUrl = configService.getOrThrow<string>('BACKEND_API_BASE_URL');
     this.isRedis = configService.get<string>('CACHE_STORE') === 'redis';
+  }
+
+  @Get('live')
+  @Public()
+  @CacheTTL(1) // 1ms: effectively no cache (Keyv treats 0 as no-expiry)
+  live(): { status: string } {
+    return { status: 'ok' };
   }
 
   @Get()

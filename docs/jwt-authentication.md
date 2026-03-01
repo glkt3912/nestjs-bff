@@ -52,6 +52,18 @@ JWT_SECRET=your-secret-key
 
 > `JWT_AUTH_ENABLED=false`（デフォルト）の場合、`JWT_SECRET` が未設定でも起動できます。
 
+### 本番環境での起動チェック
+
+`NODE_ENV=production` かつ `JWT_AUTH_ENABLED` が `"true"` でない場合、BFF は**起動時にエラーをスローして停止**します。
+
+```text
+Error: Security: JWT_AUTH_ENABLED must be "true" in production.
+       Set JWT_AUTH_ENABLED=true and configure JWT_SECRET.
+```
+
+これはデプロイ時の設定漏れを早期に検出するためのフェイルファスト設計です。
+開発・ステージング環境（`NODE_ENV` が `production` 以外）では従来通り `JWT_AUTH_ENABLED=false` で起動できます。
+
 ## エンドポイントごとの制御
 
 `@Public()` デコレータを付けたエンドポイントは、`JWT_AUTH_ENABLED=true` でも認証をスキップします。

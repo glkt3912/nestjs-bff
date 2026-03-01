@@ -8,9 +8,31 @@
 
 ## エンドポイント
 
+| エンドポイント | 用途 | 説明 |
+|---|---|---|
+| `GET /api/health/live` | Liveness probe | プロセスが起動中かを確認。常に `{ status: "ok" }` を返す |
+| `GET /api/health` | Readiness probe | バックエンドへの疎通を含む完全チェック。200 or 503 |
+
+### Kubernetes での使い分け
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /api/health/live
+    port: 3000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 30
 ```
-GET /health
-```
+
+- **Liveness** (`/live`): プロセスがデッドロックしていないか確認。バックエンドへの依存なし。
+- **Readiness** (`/api/health`): バックエンドが応答可能か確認。失敗時はトラフィックを停止。
 
 ### 正常時（HTTP 200）
 

@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
+import { getLoggerToken } from 'nestjs-pino';
 
 import { MockInterceptor } from './mock.interceptor';
 
@@ -53,6 +54,15 @@ describe('MockInterceptor', () => {
         MockInterceptor,
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: configService },
+        {
+          provide: getLoggerToken(MockInterceptor.name),
+          useValue: {
+            info: jest.fn(),
+            debug: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

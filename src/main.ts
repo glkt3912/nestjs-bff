@@ -6,6 +6,16 @@ import { AppModule } from './app.module';
 import { correlationIdMiddleware } from './shared/middleware/correlation-id.middleware';
 
 async function bootstrap() {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.JWT_AUTH_ENABLED !== 'true'
+  ) {
+    throw new Error(
+      'Security: JWT_AUTH_ENABLED must be "true" in production. ' +
+        'Set JWT_AUTH_ENABLED=true and configure JWT_SECRET.',
+    );
+  }
+
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.use(correlationIdMiddleware);
