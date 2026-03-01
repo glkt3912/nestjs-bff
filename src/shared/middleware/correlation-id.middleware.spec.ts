@@ -105,6 +105,17 @@ describe('correlationIdMiddleware', () => {
     expect(req.headers['x-request-id']).toBe(exactId);
   });
 
+  it('特殊文字を含む x-request-id は UUID 生成にフォールバックする', () => {
+    const unsafeId = '<script>alert(1)</script>';
+    const req = {
+      headers: { 'x-request-id': unsafeId },
+    } as unknown as Request;
+
+    correlationIdMiddleware(req, res as unknown as Response, next);
+
+    expect(req.headers['x-request-id']).toMatch(UUID_REGEX);
+  });
+
   it('next() が呼ばれる', () => {
     const req = { headers: {} } as unknown as Request;
 
