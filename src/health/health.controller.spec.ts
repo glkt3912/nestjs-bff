@@ -45,6 +45,10 @@ describe('HealthController', () => {
     controller = module.get<HealthController>(HealthController);
   });
 
+  it('live() は常に { status: ok } を返す', () => {
+    expect(controller.live()).toEqual({ status: 'ok' });
+  });
+
   it('HealthCheckService.check を呼び出す', async () => {
     await controller.check();
 

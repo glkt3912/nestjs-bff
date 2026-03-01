@@ -25,6 +25,12 @@ export class HealthController {
     this.isRedis = configService.get<string>('CACHE_STORE') === 'redis';
   }
 
+  @Get('live')
+  @Public()
+  live(): { status: string } {
+    return { status: 'ok' };
+  }
+
   @Get()
   @HealthCheck()
   @Public()
