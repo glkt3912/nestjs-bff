@@ -70,7 +70,10 @@ export function computeCacheStoreParams(config: ConfigService): CacheStoreParams
             req: (req) => ({ method: req.method, url: req.url }),
             res: (res) => ({ statusCode: res.statusCode }),
           },
-          autoLogging: { ignore: (req) => req.url === '/api/health' },
+          autoLogging: {
+            ignore: (req) =>
+              req.url === '/api/health' || req.url === '/api/health/live',
+          },
         },
       }),
     }),
