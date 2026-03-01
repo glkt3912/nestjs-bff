@@ -18,6 +18,33 @@ import { UserContextInterceptor } from './shared/interceptors/user-context.inter
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
 
+export type CacheStoreParams =
+  | { type: 'redis'; ttlMs: number; redisOptions: object }
+  | { type: 'memory'; ttlMs: number; maxItems: number };
+
+export function computeCacheStoreParams(config: ConfigService): CacheStoreParams {
+  // CACHE_TTL=0 は Keyv では「TTL なし（永久）」になるため 1ms にフォールバック
+  const rawTtl = Number(config.get('CACHE_TTL', 30));
+  const ttlMs = rawTtl > 0 ? rawTtl * 1000 : 1;
+  if (config.get<string>('CACHE_STORE') === 'redis') {
+    const host = config.getOrThrow<string>('REDIS_HOST');
+    const port = Number(config.get('REDIS_PORT', 6379));
+    const password = config.get<string>('REDIS_PASSWORD');
+    const db = Number(config.get('REDIS_DB', 0));
+    return {
+      type: 'redis',
+      ttlMs,
+      redisOptions: {
+        socket: { host, port },
+        ...(password ? { password } : {}),
+        database: db,
+      },
+    };
+  }
+  const maxItems = Number(config.get('CACHE_MAX_ITEMS', 500));
+  return { type: 'memory', ttlMs, maxItems };
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -62,26 +89,18 @@ import { UsersModule } from './users/users.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        // CACHE_TTL=0 は Keyv では「TTL なし（永久）」になるため 1ms にフォールバック
-        const rawTtl = Number(config.get('CACHE_TTL', 30));
-        const ttlMs = rawTtl > 0 ? rawTtl * 1000 : 1;
-        if (config.get<string>('CACHE_STORE') === 'redis') {
-          const host = config.getOrThrow<string>('REDIS_HOST');
-          const port = Number(config.get('REDIS_PORT', 6379));
-          const password = config.get<string>('REDIS_PASSWORD');
-          const db = Number(config.get('REDIS_DB', 0));
-          const url = password
-            ? `redis://:${password}@${host}:${port}/${db}`
-            : `redis://${host}:${port}/${db}`;
+        const params = computeCacheStoreParams(config);
+        if (params.type === 'redis') {
           return {
-            stores: [new Keyv({ store: new KeyvRedis(url), ttl: ttlMs })],
+            stores: [
+              new Keyv({ store: new KeyvRedis(params.redisOptions), ttl: params.ttlMs }),
+            ],
           };
         }
         // in-memory: LRU でエントリ数上限を設けて OOM を防ぐ
-        const maxItems = Number(config.get('CACHE_MAX_ITEMS', 500));
         return {
           stores: [
-            new Keyv({ store: new LRUCache({ max: maxItems }), ttl: ttlMs }),
+            new Keyv({ store: new LRUCache({ max: params.maxItems }), ttl: params.ttlMs }),
           ],
         };
       },
