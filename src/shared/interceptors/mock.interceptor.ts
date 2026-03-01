@@ -71,7 +71,7 @@ export class MockInterceptor implements OnModuleInit {
       },
     );
 
-    this.logger.log(
+    this.logger.info(
       'MockInterceptor: MOCK_MODE=true, fixture responses enabled',
     );
   }

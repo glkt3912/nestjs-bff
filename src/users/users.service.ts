@@ -46,7 +46,7 @@ export class UsersService {
     const form = new FormData();
     form.append(
       'file',
-      new Blob([file.buffer as unknown as ArrayBuffer], { type: file.mimetype }),
+      new Blob([new Uint8Array(file.buffer)], { type: file.mimetype }),
       file.originalname,
     );
     const { data } = await this.httpService.axiosRef.post<{
