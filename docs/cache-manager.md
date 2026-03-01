@@ -135,8 +135,10 @@ REDIS_PORT=6379
 | **キャッシュ無効化が自動でない** | Thin BFF のためバックエンドのデータ更新を BFF が検知できない。短い TTL（30 秒程度）での運用が推奨 |
 | **スケールアウト時** | インメモリストアはインスタンスごとに独立。複数インスタンス構成では必ず `CACHE_STORE=redis` を使用する |
 | **POST / PUT / DELETE** | CacheInterceptor は GET のみキャッシュ。変更系リクエストは対象外 |
-| **JWT_AUTH_ENABLED=true が前提** | キャッシュは JWT 認証が有効な場合のみ機能する。`JWT_AUTH_ENABLED=false`（デフォルト）では `request.user` が設定されないため全リクエストがキャッシュをスキップする。URL のみのキャッシュはバックエンドの認可を迂回するリスクがあるため意図的に無効化している |
-| **JWT 認証付きエンドポイント** | `UserAwareCacheInterceptor` が `userId:url` をキーとして使用するためユーザー間は分離済み。有効な JWT がない場合は `UnauthorizedException` で弾かれるためキャッシュ判定に到達しない |
+| **認証エンドポイントは JWT が必要** | `@Public()` のない認証必須エンドポイントは、有効な JWT がない場合 `UnauthorizedException` で弾かれるためキャッシュ判定に到達しない |
+| **JWT 認証付きエンドポイント** | `UserAwareCacheInterceptor` が `userId:url` をキーとして使用するためユーザー間は分離済み |
+| **@Public() エンドポイント** | 認証不要のため URL のみをキーにキャッシュされる。`JWT_AUTH_ENABLED=false`（デフォルト）でも `@Public()` エンドポイントはキャッシュが有効 |
+| **非 @Public() かつ未認証** | `request.user` が存在しない場合はキャッシュをスキップ。URL のみのキャッシュはバックエンドの認可を迂回するリスクがあるため意図的に無効化している |
 | **@CacheTTL の単位は ms** | `@CacheTTL(n)` の `n` はミリ秒。`CACHE_TTL` 環境変数（秒）と単位が異なる点に注意。30秒は `@CacheTTL(30_000)` と書く |
 | **インメモリ時のサイズ上限** | `CACHE_MAX_ITEMS`（デフォルト 500）でエントリ数を制限。上限超過時は LRU で古いエントリを自動削除 |
 | **エラーレスポンスはキャッシュされない** | バックエンドが 5xx を返した場合、`AxiosExceptionFilter` が例外に変換するため `UserAwareCacheInterceptor` はキャッシュしない |

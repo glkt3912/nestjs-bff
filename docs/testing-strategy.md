@@ -36,7 +36,7 @@ findAll(): Observable<UserDto[]> {
 |---------|------|---------|
 | `axios-exception.filter.ts` | バックエンドの Axios エラーを HTTP レスポンスに変換 | ステータスコードマッピング・フォールバック・ログ出力 |
 | `auth-header.interceptor.ts` | 送信リクエストに API キーを付与 | インターセプタ登録・ヘッダ注入・キー未設定時のスキップ |
-| `correlation-id.middleware.ts` | リクエスト ID の生成・伝播・バリデーション | UUID 生成・既存 ID の再利用・128 文字制限・AsyncLocalStorage への格納 |
+| `correlation-id.middleware.ts` | リクエスト ID の生成・伝播・バリデーション | UUID 生成・既存 ID の再利用・文字セット検証（`[\w\-]{1,128}`）・AsyncLocalStorage への格納 |
 | `logging.interceptor.ts` | Axios リクエスト/レスポンスの構造化ログ出力 | ログフィールド・correlationId 伝播・エラー処理 |
 | `mock.interceptor.ts` | MOCK_MODE 時にフィクスチャ JSON を返す | モード判定・URL 正規化・パストラバーサル防止 |
 

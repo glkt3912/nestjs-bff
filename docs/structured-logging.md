@@ -228,12 +228,15 @@ import { NextFunction, Request, Response } from 'express';
 import { asyncLocalStorage } from '../context/request-context';
 
 const CORRELATION_HEADER = 'x-request-id';
+// 英数字・アンダースコア・ハイフンのみ、1〜128文字（XSS / ヘッダインジェクション防止）
+const SAFE_ID_PATTERN = /^[\w\-]{1,128}$/;
 
 export function correlationIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   const raw = req.headers[CORRELATION_HEADER];
   const candidate = Array.isArray(raw) ? raw[0] : raw;
-  // 128文字超の入力は破棄してUUID生成（ログ肥大化防止）
-  const correlationId = candidate && candidate.length <= 128 ? candidate : randomUUID();
+  // 許可文字・長さ制限を満たさない場合は UUID を生成（特殊文字や過長入力を拒否）
+  const correlationId =
+    candidate && SAFE_ID_PATTERN.test(candidate) ? candidate : randomUUID();
 
   req.headers[CORRELATION_HEADER] = correlationId;  // pino-http の genReqId が読む
   res.setHeader(CORRELATION_HEADER, correlationId); // クライアントへ折り返す

@@ -102,9 +102,22 @@ CacheModule.registerAsync({
     const ttlMs = config.get<number>('CACHE_TTL', 30) * 1000;
 
     if (config.get<string>('CACHE_STORE') === 'redis') {
-      // Redis バックエンド
+      // Redis バックエンド（接続オプション形式）
+      const host = config.getOrThrow<string>('REDIS_HOST');
+      const port = Number(config.get('REDIS_PORT', 6379));
+      const password = config.get<string>('REDIS_PASSWORD');
+      const db = Number(config.get('REDIS_DB', 0));
       return {
-        stores: [new Keyv({ store: new KeyvRedis('redis://localhost:6379'), ttl: ttlMs })],
+        stores: [
+          new Keyv({
+            store: new KeyvRedis({
+              socket: { host, port },
+              ...(password ? { password } : {}),
+              database: db,
+            }),
+            ttl: ttlMs,
+          }),
+        ],
       };
     }
 
@@ -127,21 +140,34 @@ CacheModule.registerAsync({
 
 ---
 
-## Redis 接続 URL フォーマット
+## Redis 接続オプション
 
-`@keyv/redis` は標準的な Redis URI を受け付けます。
+このプロジェクトでは URL 文字列ではなく **接続オプションオブジェクト**を使用しています。
+パスワードに `@` や `/` などの特殊文字が含まれても URL エンコードが不要になるためです。
 
+```typescript
+new KeyvRedis({
+  socket: { host: 'localhost', port: 6379 },
+  password: 'my@secret/pass',  // 特殊文字もそのまま渡せる
+  database: 0,
+})
 ```
+
+URL 文字列形式も `@keyv/redis` は受け付けますが、パスワードに特殊文字が含まれると
+エンコードが必要になりバグの原因になるため推奨しません。
+
+```text
+# 参考：URL 形式（非推奨）
 redis://localhost:6379/0
-redis://:password@localhost:6379/0
-rediss://tls-host:6380/0   # TLS の場合
+redis://:password@localhost:6379/0  ← '@' を含むパスワードは壊れる
+rediss://tls-host:6380/0            # TLS の場合
 ```
 
 ---
 
 ## deprecated になった cache-manager-redis-yet
 
-```
+```text
 npm warn deprecated cache-manager-redis-yet@5.x: With cache-manager v6 we now are using Keyv
 ```
 
