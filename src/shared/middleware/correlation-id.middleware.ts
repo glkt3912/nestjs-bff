@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { asyncLocalStorage } from '../context/request-context';
 
 const CORRELATION_HEADER = 'x-request-id';
-const SAFE_ID_PATTERN = /^[\w\-]{1,128}$/;
+const SAFE_ID_PATTERN = /^[\w-]{1,128}$/;
 
 export function correlationIdMiddleware(
   req: Request,

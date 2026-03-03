@@ -6,10 +6,14 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
-interface MockError {
-  isMock: true;
-  data: unknown;
-  status: number;
+export class MockError extends Error {
+  readonly isMock = true as const;
+  constructor(
+    readonly data: unknown,
+    readonly status: number,
+  ) {
+    super('MockInterceptor: fixture response');
+  }
 }
 
 @Injectable()
@@ -52,11 +56,7 @@ export class MockInterceptor implements OnModuleInit {
           return config;
         }
         this.logger.debug(`Mock: ${method} ${url} → ${fixturePath}`);
-        return Promise.reject({
-          isMock: true,
-          data,
-          status: 200,
-        } satisfies MockError);
+        return Promise.reject(new MockError(data, 200));
       } catch {
         return config; // ファイルなし → 実リクエストへ
       }
@@ -64,10 +64,12 @@ export class MockInterceptor implements OnModuleInit {
 
     this.httpService.axiosRef.interceptors.response.use(
       (res) => res,
-      (err) => {
-        if (err?.isMock)
+      (err: unknown) => {
+        if (err instanceof MockError)
           return Promise.resolve({ data: err.data, status: err.status });
-        return Promise.reject(err);
+        return Promise.reject(
+          err instanceof Error ? err : new Error(String(err)),
+        );
       },
     );
 

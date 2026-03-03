@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import { getLoggerToken } from 'nestjs-pino';
 
-import { MockInterceptor } from './mock.interceptor';
+import { MockError, MockInterceptor } from './mock.interceptor';
 
 describe('MockInterceptor', () => {
   let interceptor: MockInterceptor;
@@ -134,7 +134,7 @@ describe('MockInterceptor', () => {
 
     it('isMock エラーを正常レスポンスオブジェクトに変換する', async () => {
       const { rejected } = responseInterceptors[0];
-      const mockError = { isMock: true, data: [{ id: 1 }], status: 200 };
+      const mockError = new MockError([{ id: 1 }], 200);
 
       await expect(rejected(mockError)).resolves.toEqual({
         data: [{ id: 1 }],
@@ -149,7 +149,7 @@ describe('MockInterceptor', () => {
       await expect(rejected(error)).rejects.toThrow('Network Error');
     });
 
-    it('fulfilled レスポンスはそのまま返す', async () => {
+    it('fulfilled レスポンスはそのまま返す', () => {
       const { fulfilled } = responseInterceptors[0];
       const response = { data: { id: 1 }, status: 200 };
 

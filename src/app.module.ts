@@ -22,7 +22,9 @@ export type CacheStoreParams =
   | { type: 'redis'; ttlMs: number; redisOptions: object }
   | { type: 'memory'; ttlMs: number; maxItems: number };
 
-export function computeCacheStoreParams(config: ConfigService): CacheStoreParams {
+export function computeCacheStoreParams(
+  config: ConfigService,
+): CacheStoreParams {
   // CACHE_TTL=0 は Keyv では「TTL なし（永久）」になるため 1ms にフォールバック
   const rawTtl = Number(config.get('CACHE_TTL', 30));
   const ttlMs = rawTtl > 0 ? rawTtl * 1000 : 1;
@@ -67,8 +69,13 @@ export function computeCacheStoreParams(config: ConfigService): CacheStoreParams
                 }
               : undefined,
           serializers: {
-            req: (req) => ({ method: req.method, url: req.url }),
-            res: (res) => ({ statusCode: res.statusCode }),
+            req: (req: { method: string; url: string }) => ({
+              method: req.method,
+              url: req.url,
+            }),
+            res: (res: { statusCode: number }) => ({
+              statusCode: res.statusCode,
+            }),
           },
           autoLogging: {
             ignore: (req) =>
@@ -96,14 +103,20 @@ export function computeCacheStoreParams(config: ConfigService): CacheStoreParams
         if (params.type === 'redis') {
           return {
             stores: [
-              new Keyv({ store: new KeyvRedis(params.redisOptions), ttl: params.ttlMs }),
+              new Keyv({
+                store: new KeyvRedis(params.redisOptions),
+                ttl: params.ttlMs,
+              }),
             ],
           };
         }
         // in-memory: LRU でエントリ数上限を設けて OOM を防ぐ
         return {
           stores: [
-            new Keyv({ store: new LRUCache({ max: params.maxItems }), ttl: params.ttlMs }),
+            new Keyv({
+              store: new LRUCache({ max: params.maxItems }),
+              ttl: params.ttlMs,
+            }),
           ],
         };
       },

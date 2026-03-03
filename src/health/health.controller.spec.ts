@@ -52,6 +52,7 @@ describe('HealthController', () => {
   it('HealthCheckService.check を呼び出す', async () => {
     await controller.check();
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(healthCheckService.check).toHaveBeenCalledTimes(1);
   });
 
@@ -68,6 +69,7 @@ describe('HealthController', () => {
     const [indicators] = healthCheckService.check.mock.calls[0];
     await indicators[0]();
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(httpHealthIndicator.pingCheck).toHaveBeenCalledWith(
       'backend',
       'http://localhost:8080',

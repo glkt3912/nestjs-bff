@@ -21,7 +21,10 @@ describe('UserContextInterceptor', () => {
 
   it('req.user.sub が存在するとき AsyncLocalStorage の userId に格納される', (done) => {
     asyncLocalStorage.run({ correlationId: 'test-id' }, () => {
-      interceptor.intercept(makeContext({ sub: 'user-123' }), makeCallHandler());
+      interceptor.intercept(
+        makeContext({ sub: 'user-123' }),
+        makeCallHandler(),
+      );
       expect(asyncLocalStorage.getStore()?.userId).toBe('user-123');
       done();
     });
@@ -45,7 +48,10 @@ describe('UserContextInterceptor', () => {
 
   it('AsyncLocalStorage のストアが存在しないとき例外をスローしない', () => {
     expect(() => {
-      interceptor.intercept(makeContext({ sub: 'user-123' }), makeCallHandler());
+      interceptor.intercept(
+        makeContext({ sub: 'user-123' }),
+        makeCallHandler(),
+      );
     }).not.toThrow();
   });
 
@@ -56,7 +62,9 @@ describe('UserContextInterceptor', () => {
         makeCallHandler(),
       );
       result$.subscribe({
-        complete: () => done(),
+        complete: () => {
+          done();
+        },
       });
     });
   });
