@@ -45,7 +45,7 @@ export class LoggingInterceptor implements OnModuleInit {
         );
         return res;
       },
-      (err) => Promise.reject(err),
+      (err: Error) => Promise.reject(err),
     );
   }
 }

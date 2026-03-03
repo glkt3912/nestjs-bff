@@ -44,10 +44,13 @@ describe('JwtAuthGuard', () => {
   describe('NODE_ENV が production かつ JWT_AUTH_ENABLED が true でないとき', () => {
     it('警告ログを出力する', () => {
       guard = buildGuard('false', 'production');
+      const privateGuard = guard as unknown as {
+        logger: { warn: (...args: unknown[]) => void };
+      };
       const warnSpy = jest
-        .spyOn((guard as any).logger, 'warn')
+        .spyOn(privateGuard.logger, 'warn')
         .mockImplementation(() => {});
-      guard.canActivate(mockExecutionContext());
+      void guard.canActivate(mockExecutionContext());
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('JWT_AUTH_ENABLED is not true in production'),
       );
@@ -71,7 +74,7 @@ describe('JwtAuthGuard', () => {
         .spyOn(AuthGuard('jwt').prototype, 'canActivate')
         .mockReturnValue(true);
       const ctx = mockExecutionContext();
-      guard.canActivate(ctx);
+      void guard.canActivate(ctx);
       expect(superSpy).toHaveBeenCalledWith(ctx);
       superSpy.mockRestore();
     });
@@ -94,9 +97,9 @@ describe('JwtAuthGuard', () => {
     });
 
     it('err が存在するとき UnauthorizedException をスローする', () => {
-      expect(() => guard.handleRequest(new Error('token expired'), null)).toThrow(
-        UnauthorizedException,
-      );
+      expect(() =>
+        guard.handleRequest(new Error('token expired'), null),
+      ).toThrow(UnauthorizedException);
     });
   });
 });

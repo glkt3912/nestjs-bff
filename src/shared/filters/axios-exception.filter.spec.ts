@@ -136,6 +136,7 @@ describe('AxiosExceptionFilter', () => {
 
     filter.catch(exception, mockHost);
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         url: '/api/users',
@@ -156,7 +157,7 @@ describe('AxiosExceptionFilter', () => {
       expect.objectContaining({
         statusCode: 404,
         path: '/test',
-        timestamp: expect.any(String),
+        timestamp: expect.any(String) as unknown,
       }),
     );
   });

@@ -4,6 +4,10 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Reflector } from '@nestjs/core';
 import { UserAwareCacheInterceptor } from './user-aware-cache.interceptor';
 
+type InterceptorWithTrackBy = {
+  trackBy: (ctx: ExecutionContext) => string | undefined;
+};
+
 const createContext = (
   url: string,
   user?: { sub?: string },
@@ -40,7 +44,9 @@ describe('UserAwareCacheInterceptor', () => {
     it('認証済みユーザーは userId:url をキーとして返す', () => {
       const context = createContext('/api/users/42', { sub: 'user-1' });
 
-      const key = (interceptor as any).trackBy(context) as string | undefined;
+      const key = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        context,
+      );
 
       expect(key).toBe('user-1:/api/users/42');
     });
@@ -48,7 +54,9 @@ describe('UserAwareCacheInterceptor', () => {
     it('user.sub が空の場合は undefined を返す（キャッシュしない）', () => {
       const context = createContext('/api/users', { sub: undefined });
 
-      const key = (interceptor as any).trackBy(context) as string | undefined;
+      const key = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        context,
+      );
 
       expect(key).toBeUndefined();
     });
@@ -56,7 +64,9 @@ describe('UserAwareCacheInterceptor', () => {
     it('user が存在しない場合は undefined を返す（キャッシュしない）', () => {
       const context = createContext('/api/users');
 
-      const key = (interceptor as any).trackBy(context) as string | undefined;
+      const key = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        context,
+      );
 
       expect(key).toBeUndefined();
     });
@@ -64,11 +74,16 @@ describe('UserAwareCacheInterceptor', () => {
     it('@Public() エンドポイントは未認証でも super.trackBy が呼ばれる', () => {
       reflector.getAllAndOverride.mockReturnValue(true);
       const superTrackBy = jest
-        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(interceptor)), 'trackBy')
+        .spyOn(
+          Object.getPrototypeOf(Object.getPrototypeOf(interceptor)),
+          'trackBy',
+        )
         .mockReturnValue('/api/health');
 
       const context = createContext('/api/health');
-      const key = (interceptor as any).trackBy(context) as string | undefined;
+      const key = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        context,
+      );
 
       expect(key).toBe('/api/health');
       superTrackBy.mockRestore();
@@ -78,7 +93,9 @@ describe('UserAwareCacheInterceptor', () => {
       reflector.getAllAndOverride.mockReturnValue(false);
       const context = createContext('/api/users');
 
-      const key = (interceptor as any).trackBy(context) as string | undefined;
+      const key = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        context,
+      );
 
       expect(key).toBeUndefined();
     });
@@ -87,8 +104,12 @@ describe('UserAwareCacheInterceptor', () => {
       const ctx1 = createContext('/api/users', { sub: 'user-1' });
       const ctx2 = createContext('/api/users/42', { sub: 'user-1' });
 
-      const key1 = (interceptor as any).trackBy(ctx1) as string;
-      const key2 = (interceptor as any).trackBy(ctx2) as string;
+      const key1 = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        ctx1,
+      );
+      const key2 = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        ctx2,
+      );
 
       expect(key1).not.toBe(key2);
     });
@@ -97,8 +118,12 @@ describe('UserAwareCacheInterceptor', () => {
       const ctx1 = createContext('/api/users/42', { sub: 'user-1' });
       const ctx2 = createContext('/api/users/42', { sub: 'user-2' });
 
-      const key1 = (interceptor as any).trackBy(ctx1) as string;
-      const key2 = (interceptor as any).trackBy(ctx2) as string;
+      const key1 = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        ctx1,
+      );
+      const key2 = (interceptor as unknown as InterceptorWithTrackBy).trackBy(
+        ctx2,
+      );
 
       expect(key1).not.toBe(key2);
     });

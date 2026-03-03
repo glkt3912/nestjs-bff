@@ -58,9 +58,11 @@ describe('ThrottlerGuard', () => {
 describe('CacheModule useFactory', () => {
   const mockConfig = (overrides: Record<string, unknown>) =>
     ({
-      get: jest.fn().mockImplementation((key: string, def: unknown) =>
-        key in overrides ? overrides[key] : def,
-      ),
+      get: jest
+        .fn()
+        .mockImplementation((key: string, def: unknown) =>
+          key in overrides ? overrides[key] : def,
+        ),
       getOrThrow: jest.fn().mockImplementation((key: string) => {
         if (key in overrides) return overrides[key];
         throw new Error(`Missing required config: ${key}`);
@@ -121,7 +123,9 @@ describe('CacheModule useFactory', () => {
 
   describe('インメモリ LRU ストア', () => {
     it('CACHE_MAX_ITEMS を指定した場合はその値を maxItems に使用する', () => {
-      const result = computeCacheStoreParams(mockConfig({ CACHE_MAX_ITEMS: 200 }));
+      const result = computeCacheStoreParams(
+        mockConfig({ CACHE_MAX_ITEMS: 200 }),
+      );
       expect(result.type).toBe('memory');
       if (result.type === 'memory') {
         expect(result.maxItems).toBe(200);

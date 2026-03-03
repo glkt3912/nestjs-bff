@@ -47,7 +47,10 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('401 のとき response.status(401) が呼ばれる', () => {
-    const exception = new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    const exception = new HttpException(
+      'Unauthorized',
+      HttpStatus.UNAUTHORIZED,
+    );
 
     filter.catch(exception, mockHost);
 
@@ -63,7 +66,10 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('レスポンスに statusCode と path と timestamp が含まれる', () => {
-    const exception = new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    const exception = new HttpException(
+      'Unauthorized',
+      HttpStatus.UNAUTHORIZED,
+    );
 
     filter.catch(exception, mockHost);
 
@@ -71,13 +77,16 @@ describe('HttpExceptionFilter', () => {
       expect.objectContaining({
         statusCode: 401,
         path: '/test',
-        timestamp: expect.any(String),
+        timestamp: expect.any(String) as unknown,
       }),
     );
   });
 
   it('文字列レスポンスのとき message にそのまま使われる', () => {
-    const exception = new HttpException('Custom message', HttpStatus.BAD_REQUEST);
+    const exception = new HttpException(
+      'Custom message',
+      HttpStatus.BAD_REQUEST,
+    );
 
     filter.catch(exception, mockHost);
 
@@ -101,7 +110,7 @@ describe('HttpExceptionFilter', () => {
 
   it('オブジェクトレスポンスに message がないとき exception.message にフォールバックする', () => {
     const exception = new HttpException(
-      { error: 'Bad Request' } as any,
+      { error: 'Bad Request' } as Record<string, string>,
       HttpStatus.BAD_REQUEST,
     );
 
@@ -113,10 +122,14 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('logger.warn が status と path を含むオブジェクト付きで呼ばれる', () => {
-    const exception = new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    const exception = new HttpException(
+      'Unauthorized',
+      HttpStatus.UNAUTHORIZED,
+    );
 
     filter.catch(exception, mockHost);
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockLogger.warn).toHaveBeenCalledWith(
       expect.objectContaining({ status: 401, path: '/test' }),
       expect.any(String),
