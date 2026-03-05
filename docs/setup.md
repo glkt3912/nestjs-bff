@@ -51,10 +51,31 @@ LOG_LEVEL=info
 
 ### 3. クライアントコードの生成
 
-バックエンドが起動している状態で実行します。
+#### バックエンドが起動している場合（通常）
 
 ```bash
 npm run gen:all
+```
+
+swagger を取得 → 生成 → prettier → 型チェックまで一括実行します。
+
+#### バックエンドが起動していない場合（CI・オフライン）
+
+ローカルの swagger ファイルを直接指定できます。JSON・YAML どちらも可。
+
+```bash
+# ローカルの JSON から生成
+OPENAPI_INPUT=./swagger.json npm run gen:client
+
+# ローカルの YAML から生成
+OPENAPI_INPUT=./specs/openapi.yaml npm run gen:client
+```
+
+スクリプトを分離して使う場合：
+
+```bash
+npm run gen:fetch   # バックエンドから swagger.json を取得のみ
+npm run gen:client  # ローカルの swagger.json から生成のみ
 ```
 
 `src/generated/` に TypeScript クライアントが生成されます。
@@ -79,7 +100,9 @@ npm run start:dev
 | `npm run start:dev` | 開発サーバー起動（ウォッチモード） |
 | `npm run build` | プロダクションビルド |
 | `npm run start:prod` | プロダクション起動 |
-| `npm run gen:all` | swagger 取得 → 生成 → 型チェック |
+| `npm run gen:fetch` | バックエンドから swagger.json を取得のみ |
+| `npm run gen:client` | ローカルの swagger ファイルから生成（`OPENAPI_INPUT` で上書き可） |
+| `npm run gen:all` | fetch → 生成 → prettier → 型チェックを一括実行 |
 | `npm run test` | ユニットテスト |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:cov` | カバレッジレポート付きテスト |

@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "gen:fetch": "curl -o swagger.json \"${BACKEND_SWAGGER_URL:-http://localhost:8080/swagger.json}\"",
-    "gen:client": "openapi-generator-cli generate --config openapi-config.yaml && prettier --write src/generated/",
+    "gen:client": "openapi-generator-cli generate --config openapi-config.yaml --input-spec \"${OPENAPI_INPUT:-./swagger.json}\" && prettier --write src/generated/ && tsc --noEmit",
     "gen:all": "bash scripts/generate-client.sh"
   },
   "dependencies": {
