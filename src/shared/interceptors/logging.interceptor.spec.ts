@@ -121,7 +121,6 @@ describe('LoggingInterceptor', () => {
 
       await requestInterceptors[0](config);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           direction: 'outbound',
@@ -144,7 +143,6 @@ describe('LoggingInterceptor', () => {
 
       await requestInterceptors[0](config);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({ bodyLogged: true }),
         expect.any(String),
@@ -162,7 +160,6 @@ describe('LoggingInterceptor', () => {
 
       await requestInterceptors[0](config);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({ bodyLogged: true }),
         expect.any(String),
@@ -180,7 +177,6 @@ describe('LoggingInterceptor', () => {
 
       await requestInterceptors[0](config);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({ bodyLogged: false }),
         expect.any(String),
@@ -201,7 +197,6 @@ describe('LoggingInterceptor', () => {
 
       await responseInterceptors[0].fulfilled(res);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           direction: 'inbound',

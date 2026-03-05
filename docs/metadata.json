@@ -183,6 +183,16 @@
       "updatedAt": "2026-02-28"
     }
     ,{
+      "id": "linting",
+      "path": "docs/linting.md",
+      "title": "Linter 構成（ESLint / TypeScript / Jest）",
+      "description": "ESLint Flat Config の基本概念、typescript-eslint の型チェックルール、eslint-plugin-jest による jest/unbound-method 問題の解決、Prettier 統合、よくある落とし穴と設定パターン",
+      "tags": ["ESLint", "TypeScript", "Jest", "品質", "開発"],
+      "industry": ["IT"],
+      "topics": ["FlatConfig", "typescript-eslint", "eslint-plugin-jest", "unbound-method", "Prettier", "recommendedTypeChecked", "parserOptions", "eslint-disable"],
+      "updatedAt": "2026-03-05"
+    }
+    ,{
       "id": "keyv-kvs",
       "path": "docs/keyv-kvs.md",
       "title": "Keyv とキーバリューストア（KVS）",
