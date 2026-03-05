@@ -52,6 +52,11 @@ export function createApiProvider<T>(
     inject: [HttpService, ConfigService],
     useFactory: (httpService: HttpService, configService: ConfigService) => {
       const basePath = configService.getOrThrow<string>(envKey);
+      if (!basePath) {
+        throw new Error(
+          `[createApiProvider] 環境変数 "${envKey}" が空です。.env を確認してください。`,
+        );
+      }
       const configuration = new Configuration({ basePath });
       // NestJS の axiosRef を渡すことで Interceptor が全 API リクエストに適用される
       return new ApiClass(configuration, basePath, httpService.axiosRef);

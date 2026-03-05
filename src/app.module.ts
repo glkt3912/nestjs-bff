@@ -15,6 +15,7 @@ import { AxiosExceptionFilter } from './shared/filters/axios-exception.filter';
 import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { UserAwareCacheInterceptor } from './shared/interceptors/user-aware-cache.interceptor';
 import { UserContextInterceptor } from './shared/interceptors/user-context.interceptor';
+import { ProductsModule } from './products/products.module';
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
 
@@ -124,6 +125,7 @@ export function computeCacheStoreParams(
     SharedModule,
     HealthModule,
     UsersModule,
+    ProductsModule,
     AuthModule,
   ],
   providers: [
