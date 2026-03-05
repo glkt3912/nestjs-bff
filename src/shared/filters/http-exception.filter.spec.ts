@@ -129,7 +129,6 @@ describe('HttpExceptionFilter', () => {
 
     filter.catch(exception, mockHost);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockLogger.warn).toHaveBeenCalledWith(
       expect.objectContaining({ status: 401, path: '/test' }),
       expect.any(String),
