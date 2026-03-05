@@ -22,7 +22,8 @@ fixtures/
 ├── GET_users.json         # GET /users
 ├── GET_users_1.json       # GET /users/1
 ├── POST_users.json        # POST /users
-└── DELETE_users_1.json    # DELETE /users/1
+├── DELETE_users_1.json    # DELETE /users/1
+└── GET_products.json      # GET /products（マルチバックエンド例）
 ```
 
 ### 3. 開発サーバーを起動
@@ -71,6 +72,20 @@ Service / Controller
 `MOCK_MODE=true` のときのみインターセプタが登録されます。
 フィクスチャが存在しないパスは実際のバックエンドへリクエストが飛ぶため、
 **一部のエンドポイントだけモックにする**こともできます。
+
+## マルチバックエンド構成での挙動
+
+`createApiProvider` で複数バックエンドを使う構成でも、MockInterceptor は
+**URL パスのみ**でフィクスチャを解決します。BaseURL（どのバックエンドか）は無視されます。
+
+```
+UsersModule    → api.getUsers()    → GET /users    → GET_users.json
+ProductsModule → api.getProducts() → GET /products → GET_products.json
+```
+
+同じパスを呼び出す場合（例：両モジュールが `/users` を参照）は同じフィクスチャが共有されます。
+バックエンドごとに異なるレスポンスをモックしたい場合は、異なる URL パスになるよう
+API 設計を分けてください。
 
 ## 注意事項
 

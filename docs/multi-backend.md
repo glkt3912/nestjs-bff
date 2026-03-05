@@ -116,7 +116,12 @@ export function createApiProvider<T>(
     provide: token,
     inject: [HttpService, ConfigService],
     useFactory: (httpService: HttpService, configService: ConfigService) => {
-      const basePath = configService.get<string>(envKey);
+      const basePath = configService.getOrThrow<string>(envKey);
+      if (!basePath) {
+        throw new Error(
+          `[createApiProvider] 環境変数 "${envKey}" が空です。.env を確認してください。`,
+        );
+      }
       const configuration = new Configuration({ basePath });
       return new ApiClass(configuration, basePath, httpService.axiosRef);
     },
@@ -151,11 +156,30 @@ export const DefaultApiProvider = createApiProvider(
 
 ---
 
+## 動作する実装例
+
+`src/products/` が `createApiProvider` を使ったマルチバックエンド DI パターンの
+最小実装例として用意されています。
+
+```
+src/products/
+  config/products-api.provider.ts  ← PRODUCT_SERVICE_API トークン定義
+  dto/product.response.ts
+  products.controller.ts           ← GET /api/products
+  products.service.ts              ← @Inject(PRODUCT_SERVICE_API)
+  products.module.ts
+```
+
+`UsersModule`（`BACKEND_API_BASE_URL`）と `ProductsModule`（`PRODUCT_SERVICE_BASE_URL`）が
+それぞれ別の DI トークンを持ち、異なる BaseURL のバックエンドへ接続する構造を示しています。
+
+---
+
 ## 新しいバックエンドを追加する手順
 
 1. バックエンドの Swagger から API クライアントを生成（`npm run gen:all`）
 2. `.env` に `<SERVICE>_BASE_URL` を追加
-3. `createApiProvider()` で DI プロバイダーを定義
+3. `src/products/` を参考に `createApiProvider()` で DI プロバイダーを定義
 4. 新しいモジュールの `providers` に登録
 5. サービスで `@Inject(token)` して利用
 
@@ -169,3 +193,4 @@ export const DefaultApiProvider = createApiProvider(
 |------|------|
 | 認証ヘッダは全バックエンドで共通 | `AuthHeaderInterceptor` は単一 `axiosRef` に登録されるため、`X-API-Key` / `Bearer Token` / `X-User-Id` がすべてのバックエンドへのリクエストに付与される。バックエンドごとに異なる認証方式が必要な場合は、Axios インスタンスを複数用意する設計が必要になる |
 | タイムアウトは全バックエンドで共通 | `HTTP_TIMEOUT` は単一の Axios インスタンスに設定されるため、バックエンドごとに異なる値を設定できない |
+| env 未設定・空文字は起動時エラー | `<SERVICE>_BASE_URL` が未設定または空文字の場合、アプリ起動時に `[createApiProvider] 環境変数 "..." が空です。` エラーが発生する。`.env` を確認すること |
