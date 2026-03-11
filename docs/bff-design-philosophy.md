@@ -156,9 +156,15 @@ Generated 側でフィールドが増えても `tsc` は MyUser 側を検出し�
 
 ## このリポジトリの立場
 
-このテンプレートは **Thin BFF** を採用している。
+このリポジトリは **Thin BFF を出発点として Thick BFF へ段階的に育てる**学習用リポジトリ。
+Generic Adapter パターンは実装済みで、以下のファイルで動作するコードを確認できる。
 
-理由は「テンプレートとして出発点にしやすいこと」と「型エラーの即時伝播による変更の検知性」を優先したため。
-Adapter 層が必要になった時点で `src/users/adapters/` を追加する形で拡張してほしい。
+| ファイル | 役割 |
+|---------|------|
+| `src/shared/adapters/generic-api.adapter.ts` | 汎用 Adapter クラス（CRUD を関数で注入） |
+| `src/users/adapters/user-backend.adapter.ts` | UsersModule 用 Adapter |
+| `src/products/adapters/product-backend.adapter.ts` | ProductsModule 用 Adapter |
 
-> Thick BFF に移行する際は、Adapter が生成型を返すよう設計することで型の断絶を防ぐことができる。
+Adapter は生成型（`UserDto`）をそのまま返すため、`tsc` がバックエンド変更を3層貫通して検出できる。
+
+> 新しいモジュールを追加する際は `src/users/adapters/` のパターンを参考にすること。
