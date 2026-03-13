@@ -33,6 +33,13 @@ describe('GenericApiAdapter', () => {
 
       expect(listFn).toHaveBeenCalledTimes(1);
     });
+
+    it('listFn が reject した場合はエラーを伝播する', async () => {
+      const error = new Error('network error');
+      listFn.mockRejectedValue(error);
+
+      await expect(adapter.findAll()).rejects.toThrow('network error');
+    });
   });
 
   describe('findById()', () => {
@@ -51,6 +58,13 @@ describe('GenericApiAdapter', () => {
       await adapter.findById(99);
 
       expect(getFn).toHaveBeenCalledWith(99);
+    });
+
+    it('getFn が reject した場合はエラーを伝播する', async () => {
+      const error = new Error('not found');
+      getFn.mockRejectedValue(error);
+
+      await expect(adapter.findById(1)).rejects.toThrow('not found');
     });
   });
 
@@ -71,6 +85,15 @@ describe('GenericApiAdapter', () => {
       await adapter.create(body);
 
       expect(createFn).toHaveBeenCalledWith(body);
+    });
+
+    it('createFn が reject した場合はエラーを伝播する', async () => {
+      const error = new Error('create is not supported');
+      createFn.mockRejectedValue(error);
+
+      await expect(adapter.create({ name: 'test' })).rejects.toThrow(
+        'create is not supported',
+      );
     });
   });
 });

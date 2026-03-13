@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DefaultApi } from '../../generated/api';
-import { UserDto } from '../../generated/models';
 import { PRODUCT_SERVICE_API } from '../config/products-api.provider';
+import { ProductDto } from '../dto/product.dto';
 import { GenericApiAdapter } from '../../shared/adapters/generic-api.adapter';
 
 /**
@@ -10,11 +10,11 @@ import { GenericApiAdapter } from '../../shared/adapters/generic-api.adapter';
  * 実際の開発では ProductsApi に差し替え、getProducts() などを呼び出す。
  */
 @Injectable()
-export class ProductBackendAdapter extends GenericApiAdapter<UserDto> {
+export class ProductBackendAdapter extends GenericApiAdapter<ProductDto> {
   constructor(@Inject(PRODUCT_SERVICE_API) api: DefaultApi) {
     super(
-      () => api.getUsers(),
-      (id) => api.getUserById({ id }),
+      () => api.getUsers() as Promise<{ data: ProductDto[] }>,
+      (id) => api.getUserById({ id }) as Promise<{ data: ProductDto }>,
       // NOTE: 実際の ProductsApi では createProduct() などに差し替える
       (_body) => Promise.reject(new Error('create is not supported')),
     );
