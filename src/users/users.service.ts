@@ -1,40 +1,37 @@
 // NOTE: このモジュールは BFF 実装パターンのリファレンス実装です。
 // 実際の機能追加時はこのパターンを参考に新モジュールを作成してください。
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { DEFAULT_API } from '../shared/config/axios-client.provider';
-import { DefaultApi } from '../generated/api';
 import { UserDto } from '../generated/models';
 import { CreateUserRequest } from './dto/create-user.request';
 import { UserResponse } from './dto/user.response';
+import { UserBackendAdapter } from './adapters/user-backend.adapter';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(DEFAULT_API) private readonly api: DefaultApi,
+    private readonly adapter: UserBackendAdapter,
     private readonly httpService: HttpService,
   ) {}
 
   // try-catch 不要。AxiosError は Global ExceptionFilter が処理する
   async findAll(): Promise<UserResponse[]> {
-    const { data } = await this.api.getUsers();
+    const data = await this.adapter.findAll();
     return plainToInstance(UserResponse, data, {
       excludeExtraneousValues: true,
     });
   }
 
   async findOne(id: number): Promise<UserResponse> {
-    const { data } = await this.api.getUserById({ id });
+    const data = await this.adapter.findById(id);
     return plainToInstance(UserResponse, data, {
       excludeExtraneousValues: true,
     });
   }
 
   async create(dto: CreateUserRequest): Promise<UserResponse> {
-    const { data } = await this.api.createUser({
-      createUserDto: dto as UserDto,
-    });
+    const data = await this.adapter.create(dto as UserDto);
     return plainToInstance(UserResponse, data, {
       excludeExtraneousValues: true,
     });
